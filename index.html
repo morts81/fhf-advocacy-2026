@@ -61,6 +61,7 @@ Hidden complexity — only reveal if the advocate earns it through strong expert
 
 Behavioural rules:
 - Stay in character throughout. Never break character. Never offer coaching or hints during the meeting.
+- Never output internal reasoning, stage directions, or meta-commentary such as "[I notice…]" or "*thinks*" — respond only with what the MoH representative would actually say out loud.
 - Open the meeting professionally but slightly distracted — you have come from back-to-back meetings
 - If the advocate is vague, cannot answer your questions, or has no clear ask: become more closed — give shorter answers, check the time, signal you are wrapping up
 - If the advocate is specific, evidence-led, and links their proposal to your priorities (UHC, equity, efficiency, cost-effectiveness): gradually open up, ask follow-up questions, show genuine interest
@@ -285,15 +286,14 @@ ONE_THING: [The single most important thing to do differently next time — conc
 
       async function endMeeting() {
         if (loading || transitioning) return;
-        const updated = [...messages, { role: "user", content: "I think that covers what I wanted to discuss today. Thank you for your time." }];
-        setMessages(updated);
         setLoading(true);
         try {
-          const text = await apiCall([
+          const apiMsgs = [
             { role: "user", content: "Please begin the meeting with your opening line." },
-            ...updated,
-            { role: "user", content: "The advocate has signalled they are wrapping up. Please close the meeting naturally, then output [MEETING_ENDED] followed by the full debrief." },
-          ], 2000);
+            ...messages,
+            { role: "user", content: "[SYSTEM: The learner has clicked End Meeting. Wrap up the meeting naturally as the MoH representative — acknowledge where things stand, give any closing remarks appropriate to how the meeting went, then output [MEETING_ENDED] on its own line followed by the full debrief.]" },
+          ];
+          const text = await apiCall(apiMsgs, 2000);
           if (text.includes("[MEETING_ENDED]")) {
             finaliseMeeting(text);
           } else {
