@@ -286,33 +286,6 @@ ONE_THING: [The single most important thing to do differently next time — conc
         }
       }
 
-      async function endMeeting() {
-        if (loading || transitioning) return;
-        setLoading(true);
-        try {
-          const closingSystem = SYSTEM_PROMPT + "\n\n[The learner has clicked End Meeting. Close the meeting now in your own words — summarise where things landed, respond naturally to anything still open, then output [MEETING_ENDED] on its own line followed by the full debrief. Do not wait for another user message.]";
-          const apiMsgs = [
-            { role: "user", content: "Please begin the meeting with your opening line." },
-            ...messages,
-          ];
-          const res = await fetch("/api/proxy", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 2000, system: closingSystem, messages: apiMsgs }),
-          });
-          const data = await res.json();
-          const text = data.content?.find(b => b.type === "text")?.text || "";
-          if (text.includes("[MEETING_ENDED]")) {
-            finaliseMeeting(text);
-          } else {
-            setMessages(prev => [...prev, { role: "assistant", content: text }]);
-            setLoading(false);
-          }
-        } catch {
-          setLoading(false);
-        }
-      }
-
       function reset() {
         setScreen("briefing");
         setChecked(false);
@@ -404,7 +377,6 @@ ONE_THING: [The single most important thing to do differently next time — conc
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <span style={{ fontFamily: FONT, fontSize: 13, color: SAGE, opacity: 0.85 }}>Exchange {exchangeCount} of ~10</span>
-                <button style={btnOutlineSage} onClick={endMeeting} disabled={loading || transitioning}>End Meeting</button>
               </div>
             </div>
 
@@ -445,7 +417,7 @@ ONE_THING: [The single most important thing to do differently next time — conc
 
               {exchangeCount >= 9 && !loading && !transitioning && (
                 <div style={{ textAlign: "center", padding: "0.6rem 1rem", background: ORANGE_PALE, borderRadius: 8, fontFamily: FONT, fontSize: 13, color: ORANGE_DARK, border: `1px solid ${ORANGE}` }}>
-                  The meeting is approaching its natural conclusion. Consider wrapping up or click End Meeting.
+                  The meeting is approaching its natural conclusion. Consider wrapping up your pitch.
                 </div>
               )}
 
