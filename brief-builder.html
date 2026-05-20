@@ -235,6 +235,7 @@ Then immediately reproduce the complete final brief one more time so it can be d
       const [loading, setLoading]         = useState(false);
       const [apiError, setApiError]       = useState(null);
       const [showDraftBtn, setShowDraftBtn] = useState(false);
+      const [showRefineBtn, setShowRefineBtn] = useState(false);
       const [briefComplete, setBriefComplete] = useState(false);
       const bottomRef = useRef(null);
 
@@ -274,6 +275,7 @@ Then immediately reproduce the complete final brief one more time so it can be d
         if (!userMsg || loading) return;
         setInput("");
         setShowDraftBtn(false);
+        setShowRefineBtn(false);
         const updated = [...messages, { role: "user", content: userMsg }];
         setMessages(updated);
         setLoading(true);
@@ -289,6 +291,9 @@ Then immediately reproduce the complete final brief one more time so it can be d
           setMessages(newMsgs);
           if (text.toLowerCase().includes("click the button")) setShowDraftBtn(true);
           if (text.includes("BRIEF_COMPLETE")) setBriefComplete(true);
+          // Draft produced — show refine prompt (detected by presence of multiple ** headers)
+          const headerCount = (text.match(/\*\*/g) || []).length;
+          if (headerCount >= 8 && !text.includes("BRIEF_COMPLETE")) setShowRefineBtn(true);
         } catch (err) { setApiError(err.message); }
         setLoading(false);
       }
@@ -308,7 +313,7 @@ Then immediately reproduce the complete final brief one more time so it can be d
         setScreen("core-message");
         setCm({ problem: "", cause: "", solution: "", ask: "", decisionMaker: "" });
         setMessages([]); setInput(""); setLoading(false);
-        setApiError(null); setShowDraftBtn(false); setBriefComplete(false);
+        setApiError(null); setShowDraftBtn(false); setShowRefineBtn(false); setBriefComplete(false);
       }
 
       // ── Screen 1: Core Message ──────────────────────────────────────────────
@@ -392,9 +397,12 @@ Then immediately reproduce the complete final brief one more time so it can be d
                     borderRadius: msg.role === "user" ? "12px 12px 3px 12px" : "3px 12px 12px 12px",
                     background: msg.role === "user" ? ORANGE : WHITE,
                     border: msg.role === "user" ? "none" : `1px solid ${BORDER}`,
-                    fontFamily: FONT, fontSize: 15, color: msg.role === "user" ? WHITE : CHARCOAL,
+                    fontFamily: FONT, fontSize: 15, lineHeight: 1.7, color: msg.role === "user" ? WHITE : CHARCOAL,
                   }}>
-                    {msg.role === "assistant" ? renderMessageContent(msg.content.replace("BRIEF_COMPLETE", "")) : msg.content}
+                    {msg.role === "assistant"
+                      ? renderMessageContent(msg.content.replace("BRIEF_COMPLETE", ""))
+                      : renderMessageContent(msg.content)
+                    }
                   </div>
                 </div>
               ))}
@@ -427,6 +435,19 @@ Then immediately reproduce the complete final brief one more time so it can be d
                   >
                     <i className="ti ti-file-text" aria-hidden="true" />
                     Draft my brief
+                  </button>
+                </div>
+              )}
+
+              {showRefineBtn && !loading && !briefComplete && (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "1.25rem", background: SAGE_PALE, borderRadius: 8, border: `1px solid ${SAGE}` }}>
+                  <p style={{ fontFamily: FONT, fontSize: 14, fontWeight: 600, color: SAGE_DARK, margin: 0 }}>Your draft is ready to review. Click below to start the refinement questions.</p>
+                  <button
+                    style={{ fontFamily: FONT, background: SAGE_DARK, color: WHITE, border: "none", borderRadius: 8, padding: "0.65rem 1.5rem", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+                    onClick={() => send("I have read the draft and I am ready to refine it.")}
+                  >
+                    <i className="ti ti-edit" aria-hidden="true" />
+                    Start refinement
                   </button>
                 </div>
               )}
