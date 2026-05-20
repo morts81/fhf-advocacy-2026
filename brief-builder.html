@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Policy Brief Builder — The Fred Hollows Foundation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: #F2F2F2; font-family: 'Noto Sans', 'Segoe UI', sans-serif; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    @keyframes blink { 0%,80%,100%{opacity:.25;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.3s ease forwards; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    // Design tokens — matching existing FHF app
+    const ORANGE      = "#EA7600";
+    const ORANGE_PALE = "#FEF3E6";
+    const ORANGE_DARK = "#B85D00";
+    const SAGE        = "#A5C8BE";
+    const SAGE_DARK   = "#4E8C80";
+    const SAGE_PALE   = "#EBF5F3";
+    const CHARCOAL    = "#282828";
+    const CHARCOAL_60 = "#717171";
+    const CHARCOAL_10 = "#F2F2F2";
+    const WHITE       = "#FFFFFF";
+    const BORDER      = "rgba(40,40,40,0.13)";
+    const BORDER_MED  = "rgba(40,40,40,0.24)";
+    const SUCCESS     = "#2E7D5E";
+    const FONT        = "'Noto Sans', 'Segoe UI', sans-serif";
+
+    const pageWrap    = { minHeight: "100vh", background: CHARCOAL_10, fontFamily: FONT, padding: "2rem 1rem" };
+    const cardWrap    = { maxWidth: 760, margin: "0 auto", background: WHITE, borderRadius: 14, border: `1px solid ${BORDER}`, overflow: "hidden" };
+    const cardHdr     = { background: CHARCOAL, padding: "1.25rem 2rem", display: "flex", alignItems: "center", gap: 14 };
+    const cardBody    = { padding: "2rem" };
+    const btnPrimary  = { fontFamily: FONT, background: ORANGE, color: WHITE, border: "none", borderRadius: 8, padding: "0.7rem 1.5rem", fontSize: 15, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 };
+    const btnDisabled = { ...btnPrimary, background: CHARCOAL_10, color: CHARCOAL_60, border: `1px solid ${BORDER}`, cursor: "not-allowed" };
+    const btnOutlineSage = { fontFamily: FONT, background: "transparent", color: SAGE, border: `1.5px solid ${SAGE}`, borderRadius: 8, padding: "0.45rem 1.1rem", fontSize: 14, fontWeight: 600, cursor: "pointer" };
+    const btnSuccess  = { fontFamily: FONT, background: SUCCESS, color: WHITE, border: "none", borderRadius: 8, padding: "0.65rem 1.5rem", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 };
+    const btnSage     = { fontFamily: FONT, background: SAGE_PALE, color: SAGE_DARK, border: `1.5px solid ${SAGE}`, borderRadius: 8, padding: "0.7rem 1.5rem", fontSize: 15, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 };
+
+    function buildSystemPrompt(cm) {
+      return `You are a friendly, encouraging coaching tool helping staff from The Fred Hollows Foundation (FHF) develop an advocacy policy brief for a real project they are working on. Your role is to draw out their knowledge and thinking through a structured conversation, then use what they share to draft a professional policy brief they can review and refine.
+
+You are embedded in a React component. This conversation covers Stages 2, 3, and 4: follow-up questions, drafting the brief, and feedback and refinement.
+
+The user has already entered their core message:
+PROBLEM: ${cm.problem}
+CAUSE: ${cm.cause}
+SOLUTION: ${cm.solution}
+ADVOCACY ASK: ${cm.ask}
+DECISION MAKER: ${cm.decisionMaker}
+
+Your tone throughout should be that of a knowledgeable, encouraging colleague — not a teacher marking work. Keep your language simple and direct. Users may not be writing in their first language. Never ask more than two questions at a time. Always wait for a response before asking the next question.
+
+---
+
+STAGE 2: FOLLOW-UP QUESTIONS
+
+Begin by greeting the user warmly, briefly acknowledging their core message and decision maker. Then work through these questions one or two at a time.
+
+ABOUT THE DECISION MAKER:
+1. Based on what you know or have observed, what do you think this decision maker is likely to care most about right now? For example, they might be focused on budget constraints, achieving UHC targets, political visibility, workforce pressures, or improving service quality — or something quite different. Even a rough sense of their priorities will help make the brief more targeted.
+
+2. What concerns or objections do you think they might raise about your ask? These could be practical (cost, capacity, competing priorities) or political. Don't worry if you're not certain — your best guess based on your experience in this context is exactly what's needed here.
+
+ABOUT THE EVIDENCE:
+3. Do you have any local data or statistics that give a sense of the scale of the problem in your country or region? Even approximate figures, or numbers from a neighbouring country or similar context, are useful. If you don't have anything specific, just let me know and we'll work with what's available.
+
+4. Is there an example — from your own project, your country, or another similar context — that suggests your proposed solution could work? This could be a pilot result, a success story from another country, or even an example of a similar approach being tried elsewhere.
+
+ABOUT FEASIBILITY:
+5. Are there any existing government plans, strategies, budget lines or health system structures that your proposal could connect to or build on? For example, is your ask something that could fit within an existing UHC framework, national health plan, or annual budget cycle? If you're not sure, that's fine — just share whatever comes to mind.
+
+6. Do you have any rough sense of what the cost or investment involved might be, and what the likely benefit or return would be? This doesn't need to be precise — even a ballpark figure or a reference to cost-effectiveness evidence from another context is helpful.
+
+ABOUT FHF'S ROLE:
+7. What can The Fred Hollows Foundation realistically offer to help make this happen? For example, technical assistance, evidence generation, stakeholder coordination, piloting support, or funding. What feels honest and achievable given your project?
+
+If the user gives vague or thin answers, gently push back once — "Can you give me a specific example?" or "Is there a local figure or statistic that supports this?" — but if they genuinely don't have the information after that, move on gracefully.
+
+Once all seven areas have been covered, say: "Thanks — I have everything I need to draft your brief. Type 'draft my brief' or click the button below and I'll produce a first version based on what you've shared." — include the phrase "click the button" exactly so the interface can detect it.
+
+---
+
+STAGE 3: DRAFT BRIEF
+
+When the user requests the draft, produce the full policy brief using this structure. Use **bold** markers for all section headings.
+
+Use this Vietnam example as a benchmark for tone, specificity, and how recommendations are written:
+
+EXAMPLE:
+**A National Cataract Surgical Protocol to Strengthen Cataract Surgical Quality in Vietnam**
+
+Vietnam has made significant progress in reducing cataract blindness. However, only 60% of surgeries are achieving a good visual outcome — well below the WHO benchmark of 80%.
+
+**Executive Summary**
+- Vietnam's cataract surgical quality falls significantly below WHO benchmarks, with only 60% good outcomes vs the 80% target
+- The absence of national standards and outcomes monitoring is driving inequitable, avoidable complications
+- A government-endorsed National Protocol for Cataract Surgery (NPCS) would standardise practice and embed quality monitoring
+- Evidence from Vietnam shows routine outcomes monitoring can rapidly improve results
+- We urge MSA to lead development, piloting and national rollout of the NPCS
+
+**The Problem**
+Cataract surgery is one of the most cost-effective health interventions. However in Vietnam, only 60% of surgeries result in a good visual outcome — well below the WHO benchmark of 80% or more. There are no national, government-endorsed standards for cataract surgical procedures, minimum quality requirements, or routine monitoring of post-operative outcomes.
+
+**Why It Matters**
+Poor outcomes lead to significant long-term social and economic burdens. Improving surgical quality is a cost-effective investment that protects health system resources and quality of life, and directly supports Vietnam's commitments on Universal Health Coverage and avoidable blindness reduction.
+
+**The Solution**
+An MOH-endorsed National Protocol for Cataract Surgery (NPCS) would standardise clinical practice and minimum quality standards. Evidence shows this works: Tien Giang Provincial Eye Hospital improved good outcomes from 67% to 82% in two years by following a Cataract Surgical Surveillance System supported by FHF.
+
+**Cost, Feasibility & Impact**
+MSA is well positioned to lead this process. It aligns with MSA's existing role in setting technical standards and its experience developing clinical practice guidelines for cataract. FHF stands ready to provide evidence, technical assistance, and support for piloting.
+
+**Policy Recommendations**
+1. Endorse and lead a national process to develop a National Protocol for Cataract Surgery (NPCS).
+2. Convene a technical working group to draft the NPCS and define minimum quality requirements.
+3. Embed cataract surgical outcomes monitoring within the NPCS.
+4. Pilot the NPCS for 6 months in selected provinces/facilities before national rollout.
+5. Link NPCS compliance to facility accreditation and health insurance reimbursement criteria.
+
+**Contact**
+The Fred Hollows Foundation Vietnam
+[Contact name and details]
+
+END OF EXAMPLE
+
+Now draft the user's brief using exactly this structure. IMPORTANT: Never invent facts, statistics or examples. If the user hasn't provided specific evidence, flag it in the draft like this: [Add local statistic here] or [Insert country example if available].
+
+After producing the draft, say: "Please read through the draft carefully. When you're ready, I'll ask you a few specific questions to help strengthen it."
+
+---
+
+STAGE 4: FEEDBACK AND REFINEMENT
+
+Ask these questions one or two at a time:
+
+1. ACCURACY: Are there any facts, figures or claims in the draft that don't accurately reflect your country context? Even small things — names of ministries, local terminology, specific figures — are worth correcting.
+
+2. THE ASK: Read through the recommendations. Could your decision maker read each one and know exactly what they are being asked to do? If any feel too vague or too ambitious, tell me and we'll sharpen them.
+
+3. DECISION MAKER FIT: Does the "Why It Matters" section speak to what your decision maker actually cares about? Is there anything about their specific situation or constraints that the draft misses?
+
+4. FHF'S ROLE: Is the description of what FHF can offer accurate and realistic given your project?
+
+5. OVERALL: Is there anything important missing? Or anything that could be cut to make the argument sharper?
+
+For each piece of feedback, update the relevant section and show the revised version before offering to show the full updated brief.
+
+When the user is satisfied, output exactly this signal on its own line: BRIEF_COMPLETE
+Then immediately reproduce the complete final brief one more time so it can be downloaded.`;
+    }
+
+    // Sub-components
+    function Avatar({ icon, bg, size = 38 }) {
+      return (
+        <div style={{ width: size, height: size, borderRadius: "50%", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <i className={`ti ti-${icon}`} style={{ color: WHITE, fontSize: size * 0.47 }} />
+        </div>
+      );
+    }
+
+    function SectionLabel({ children }) {
+      return <p style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: CHARCOAL_60, margin: "0 0 10px" }}>{children}</p>;
+    }
+
+    function Divider() {
+      return <hr style={{ border: "none", borderTop: `1px solid ${BORDER}`, margin: "1.5rem 0" }} />;
+    }
+
+    function FormField({ label, hint, value, onChange, rows = 3, placeholder }) {
+      return (
+        <div style={{ marginBottom: "1.25rem" }}>
+          <label style={{ display: "block", fontFamily: FONT, fontSize: 14, fontWeight: 600, color: CHARCOAL, marginBottom: 5 }}>{label}</label>
+          {hint && <p style={{ fontFamily: FONT, fontSize: 13, color: CHARCOAL_60, margin: "0 0 7px", lineHeight: 1.55 }}>{hint}</p>}
+          <textarea
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            rows={rows}
+            placeholder={placeholder}
+            style={{ width: "100%", fontFamily: FONT, fontSize: 14, lineHeight: 1.6, border: `1px solid ${BORDER_MED}`, borderRadius: 8, padding: "0.65rem 0.9rem", color: CHARCOAL, background: WHITE, outline: "none", resize: "vertical" }}
+          />
+        </div>
+      );
+    }
+
+    function renderMessageContent(text) {
+      const lines = text.split("\n");
+      return lines.map((line, i) => {
+        if (!line.trim()) return <div key={i} style={{ height: 8 }} />;
+        const html = line.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        if (line.match(/^[-•]\s/)) {
+          return (
+            <div key={i} style={{ display: "flex", gap: 8, lineHeight: 1.7, marginBottom: 2 }}>
+              <span style={{ flexShrink: 0, marginTop: 2 }}>•</span>
+              <span dangerouslySetInnerHTML={{ __html: html.replace(/^[-•]\s/, "") }} />
+            </div>
+          );
+        }
+        if (line.match(/^\d+\.\s/)) {
+          return <div key={i} style={{ lineHeight: 1.7, marginBottom: 2 }} dangerouslySetInnerHTML={{ __html: html }} />;
+        }
+        return <div key={i} style={{ lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: html }} />;
+      });
+    }
+
+    function extractBriefText(messages) {
+      for (let i = messages.length - 1; i >= 0; i--) {
+        const m = messages[i];
+        if (m.role === "assistant" && (m.content.match(/\*\*/g) || []).length >= 8) {
+          return m.content.replace(/BRIEF_COMPLETE\s*/g, "").trim();
+        }
+      }
+      return null;
+    }
+
+    function App() {
+      const [screen, setScreen]           = useState("core-message");
+      const [cm, setCm]                   = useState({ problem: "", cause: "", solution: "", ask: "", decisionMaker: "" });
+      const [messages, setMessages]       = useState([]);
+      const [input, setInput]             = useState("");
+      const [loading, setLoading]         = useState(false);
+      const [apiError, setApiError]       = useState(null);
+      const [showDraftBtn, setShowDraftBtn] = useState(false);
+      const [briefComplete, setBriefComplete] = useState(false);
+      const bottomRef = useRef(null);
+
+      useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
+
+      const valid = cm.problem.trim() && cm.cause.trim() && cm.solution.trim() && cm.ask.trim() && cm.decisionMaker.trim();
+
+      async function callApi(msgs, maxTokens = 1400) {
+        const res = await fetch("/api/brief-proxy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            system: buildSystemPrompt(cm),
+            messages: msgs,
+            maxTokens,
+          }),
+        });
+        if (!res.ok) throw new Error(`Request failed (${res.status}). Please try again.`);
+        const data = await res.json();
+        if (!data.text) throw new Error("No response received. Please try again.");
+        return data.text;
+      }
+
+      async function startChat() {
+        setScreen("chat");
+        setLoading(true);
+        setApiError(null);
+        try {
+          const text = await callApi([{ role: "user", content: "Please begin — acknowledge my core message and start the follow-up questions." }]);
+          setMessages([{ role: "assistant", content: text }]);
+        } catch (err) { setApiError(err.message); }
+        setLoading(false);
+      }
+
+      async function send(override) {
+        const userMsg = (override || input).trim();
+        if (!userMsg || loading) return;
+        setInput("");
+        setShowDraftBtn(false);
+        const updated = [...messages, { role: "user", content: userMsg }];
+        setMessages(updated);
+        setLoading(true);
+        setApiError(null);
+        try {
+          const apiMsgs = [
+            { role: "user", content: "Please begin — acknowledge my core message and start the follow-up questions." },
+            ...updated,
+          ];
+          const maxTok = userMsg.toLowerCase().includes("draft") ? 2500 : 1400;
+          const text = await callApi(apiMsgs, maxTok);
+          const newMsgs = [...updated, { role: "assistant", content: text }];
+          setMessages(newMsgs);
+          if (text.toLowerCase().includes("click the button")) setShowDraftBtn(true);
+          if (text.includes("BRIEF_COMPLETE")) setBriefComplete(true);
+        } catch (err) { setApiError(err.message); }
+        setLoading(false);
+      }
+
+      function downloadBrief() {
+        const brief = extractBriefText(messages);
+        if (!brief) return;
+        const clean = brief.replace(/\*\*/g, "").replace(/BRIEF_COMPLETE/g, "").trim();
+        const blob = new Blob([clean], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = "policy-brief.txt"; a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function reset() {
+        setScreen("core-message");
+        setCm({ problem: "", cause: "", solution: "", ask: "", decisionMaker: "" });
+        setMessages([]); setInput(""); setLoading(false);
+        setApiError(null); setShowDraftBtn(false); setBriefComplete(false);
+      }
+
+      // ── Screen 1: Core Message ──────────────────────────────────────────────
+      if (screen === "core-message") return (
+        <div style={pageWrap}>
+          <div style={cardWrap}>
+            <div style={cardHdr}>
+              <Avatar icon="file-description" bg={ORANGE} />
+              <div>
+                <p style={{ fontFamily: FONT, margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: SAGE }}>Unit 6 — Advocacy Tactics</p>
+                <p style={{ fontFamily: FONT, margin: "3px 0 0", fontSize: 18, fontWeight: 700, color: WHITE }}>Policy Brief Builder</p>
+              </div>
+            </div>
+            <div style={cardBody}>
+              <SectionLabel>Getting started</SectionLabel>
+              <h2 style={{ fontFamily: FONT, fontSize: 22, fontWeight: 700, color: CHARCOAL, margin: "0 0 0.75rem" }}>Your Core Message</h2>
+              <p style={{ fontFamily: FONT, fontSize: 15, lineHeight: 1.75, color: CHARCOAL, margin: "0 0 1.5rem" }}>
+                Enter the core advocacy message you developed in Unit 5. This will be the foundation of your policy brief. All fields are required.
+              </p>
+              <div style={{ background: SAGE_PALE, borderLeft: `3px solid ${SAGE_DARK}`, borderRadius: 8, padding: "1rem 1.25rem", marginBottom: "1.75rem" }}>
+                <p style={{ fontFamily: FONT, margin: 0, fontSize: 14, color: CHARCOAL, lineHeight: 1.7 }}>
+                  <strong>Tip:</strong> You can copy these directly from your Unit 5 activity. Don't worry about getting them perfect here — the brief builder will help you develop and sharpen your ideas.
+                </p>
+              </div>
+
+              <FormField label="Problem" hint="What is the issue you are trying to address, and why does it matter?" value={cm.problem} onChange={v => setCm(p => ({...p, problem: v}))} placeholder="e.g. In our country, only X% of people with cataracts receive timely treatment, leaving thousands unnecessarily blind…" rows={3} />
+              <FormField label="Cause" hint="What underlying factors or gaps are contributing to the problem?" value={cm.cause} onChange={v => setCm(p => ({...p, cause: v}))} placeholder="e.g. There are no national standards for surgical quality, and limited eye health workforce in rural areas…" rows={3} />
+              <FormField label="Solution" hint="What needs to change to address the problem effectively?" value={cm.solution} onChange={v => setCm(p => ({...p, solution: v}))} placeholder="e.g. The government should develop and endorse a national protocol for…" rows={3} />
+              <FormField label="Advocacy ask" hint="What specific action do you want the decision maker to take? (e.g. a policy change, funding commitment, inclusion in a plan)" value={cm.ask} onChange={v => setCm(p => ({...p, ask: v}))} placeholder="e.g. We are asking the Ministry of Health to formally endorse and lead…" rows={2} />
+
+              <Divider />
+
+              <FormField label="Decision maker" hint="Who is this brief aimed at? Be specific — include their title and institution." value={cm.decisionMaker} onChange={v => setCm(p => ({...p, decisionMaker: v}))} placeholder="e.g. Director of Primary Health Care, Ministry of Health; Provincial Health Director, Kampong Cham" rows={2} />
+
+              <button style={valid ? btnPrimary : btnDisabled} disabled={!valid} onClick={startChat}>
+                <i className="ti ti-arrow-right" aria-hidden="true" />
+                Continue to Brief Builder
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+      // ── Screen 2: Chat ──────────────────────────────────────────────────────
+      if (screen === "chat") return (
+        <div style={pageWrap}>
+          <div style={{ ...cardWrap, display: "flex", flexDirection: "column", minHeight: "88vh" }}>
+
+            <div style={{ ...cardHdr, flexShrink: 0, justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <Avatar icon="robot" bg={SAGE_DARK} />
+                <div>
+                  <p style={{ fontFamily: FONT, margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: SAGE }}>
+                    {briefComplete ? "Brief complete" : "Building your brief"}
+                  </p>
+                  <p style={{ fontFamily: FONT, margin: "3px 0 0", fontSize: 17, fontWeight: 700, color: WHITE }}>Policy Brief Builder</p>
+                </div>
+              </div>
+              <button style={btnOutlineSage} onClick={reset}>Start over</button>
+            </div>
+
+            {/* Decision maker strip */}
+            <div style={{ background: ORANGE_PALE, borderBottom: `1px solid ${BORDER}`, padding: "0.7rem 2rem", flexShrink: 0 }}>
+              <span style={{ fontFamily: FONT, fontSize: 12, fontWeight: 700, color: ORANGE_DARK, textTransform: "uppercase", letterSpacing: "0.08em", marginRight: 8 }}>Decision maker:</span>
+              <span style={{ fontFamily: FONT, fontSize: 13, color: CHARCOAL }}>{cm.decisionMaker}</span>
+            </div>
+
+            {/* Messages */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "1.5rem 2rem", display: "flex", flexDirection: "column", gap: 16, background: CHARCOAL_10 }}>
+
+              {messages.map((msg, i) => (
+                <div key={i} className="fade-in" style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start", alignItems: "flex-end", gap: 8 }}>
+                  {msg.role === "assistant" && (
+                    <div style={{ width: 30, height: 30, borderRadius: "50%", background: SAGE, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginBottom: 2 }}>
+                      <i className="ti ti-robot" style={{ fontSize: 14, color: CHARCOAL }} />
+                    </div>
+                  )}
+                  <div style={{
+                    maxWidth: msg.role === "assistant" ? "84%" : "72%",
+                    padding: "0.85rem 1.1rem",
+                    borderRadius: msg.role === "user" ? "12px 12px 3px 12px" : "3px 12px 12px 12px",
+                    background: msg.role === "user" ? ORANGE : WHITE,
+                    border: msg.role === "user" ? "none" : `1px solid ${BORDER}`,
+                    fontFamily: FONT, fontSize: 15, color: msg.role === "user" ? WHITE : CHARCOAL,
+                  }}>
+                    {msg.role === "assistant" ? renderMessageContent(msg.content.replace("BRIEF_COMPLETE", "")) : msg.content}
+                  </div>
+                </div>
+              ))}
+
+              {loading && (
+                <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
+                  <div style={{ width: 30, height: 30, borderRadius: "50%", background: SAGE, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <i className="ti ti-robot" style={{ fontSize: 14, color: CHARCOAL }} />
+                  </div>
+                  <div style={{ padding: "0.8rem 1.05rem", background: WHITE, border: `1px solid ${BORDER}`, borderRadius: "3px 12px 12px 12px", display: "flex", gap: 5, alignItems: "center" }}>
+                    {[0,1,2].map(d => <div key={d} style={{ width: 7, height: 7, borderRadius: "50%", background: SAGE, animation: "blink 1.2s ease-in-out infinite", animationDelay: `${d*0.22}s` }} />)}
+                  </div>
+                </div>
+              )}
+
+              {apiError && (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0.75rem 1rem", background: "#FAE9E6", borderRadius: 8, border: "1px solid #E8A090", fontFamily: FONT, fontSize: 14, color: "#7A2818" }}>
+                  <i className="ti ti-alert-triangle" style={{ fontSize: 16, flexShrink: 0 }} />
+                  <span>{apiError}</span>
+                  <button onClick={() => setApiError(null)} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", fontFamily: FONT, fontSize: 13, color: "#7A2818", textDecoration: "underline" }}>Dismiss</button>
+                </div>
+              )}
+
+              {showDraftBtn && !loading && !briefComplete && (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "1.25rem", background: SAGE_PALE, borderRadius: 8, border: `1px solid ${SAGE}` }}>
+                  <p style={{ fontFamily: FONT, fontSize: 14, fontWeight: 600, color: SAGE_DARK, margin: 0 }}>Ready to generate your draft brief?</p>
+                  <button
+                    style={{ fontFamily: FONT, background: SAGE_DARK, color: WHITE, border: "none", borderRadius: 8, padding: "0.65rem 1.5rem", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+                    onClick={() => send("Please draft my brief now.")}
+                  >
+                    <i className="ti ti-file-text" aria-hidden="true" />
+                    Draft my brief
+                  </button>
+                </div>
+              )}
+
+              {briefComplete && !loading && (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "1.25rem", background: "#F0F8F5", borderRadius: 8, border: `1px solid ${SUCCESS}` }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <i className="ti ti-circle-check" style={{ color: SUCCESS, fontSize: 22 }} />
+                    <p style={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: SUCCESS, margin: 0 }}>Your brief is complete</p>
+                  </div>
+                  <button style={btnSuccess} onClick={downloadBrief}>
+                    <i className="ti ti-download" aria-hidden="true" />
+                    Download your brief
+                  </button>
+                </div>
+              )}
+
+              <div ref={bottomRef} />
+            </div>
+
+            {/* Input area */}
+            {!briefComplete ? (
+              <div style={{ borderTop: `1px solid ${BORDER}`, padding: "1rem 2rem", background: WHITE, flexShrink: 0 }}>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <textarea
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+                    placeholder="Type your response… (Enter to send, Shift+Enter for a new line)"
+                    disabled={loading}
+                    rows={4}
+                    style={{ flex: 1, resize: "none", fontFamily: FONT, border: `1px solid ${BORDER_MED}`, borderRadius: 8, padding: "0.65rem 0.9rem", fontSize: 15, lineHeight: 1.55, color: CHARCOAL, background: WHITE, outline: "none", minHeight: 100, maxHeight: 200 }}
+                  />
+                  <button style={{ ...btnPrimary, opacity: loading || !input.trim() ? 0.4 : 1 }} onClick={() => send()} disabled={loading || !input.trim()}>
+                    <i className="ti ti-send" aria-hidden="true" />
+                    Send
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ borderTop: `1px solid ${BORDER}`, padding: "1rem 2rem", background: WHITE, flexShrink: 0, display: "flex", gap: 10 }}>
+                <button style={btnSage} onClick={reset}>
+                  <i className="ti ti-refresh" aria-hidden="true" />
+                  Start a new brief
+                </button>
+                <button style={btnPrimary} onClick={downloadBrief}>
+                  <i className="ti ti-download" aria-hidden="true" />
+                  Download brief
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+
+      return null;
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
