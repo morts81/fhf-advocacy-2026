@@ -136,7 +136,7 @@
       }, [messages, loading]);
 
       async function apiCall(msgs, maxTokens = 1000) {
-        const res = await fetch("/api/proxy", {
+        const res = await fetch("/api/lobby-meeting-proxy", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ messages: msgs, maxTokens }),
