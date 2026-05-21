@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advocacy Training Tools — The Fred Hollows Foundation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #F2F2F2;
+      font-family: 'Noto Sans', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #282828;
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #EA7600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .header-icon i { color: #fff; font-size: 20px; }
+
+    .header-text p { margin: 0; font-family: inherit; }
+    .header-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #A5C8BE; }
+    .header-title { font-size: 18px; font-weight: 700; color: #fff; margin-top: 3px !important; }
+
+    main {
+      flex: 1;
+      max-width: 760px;
+      margin: 3rem auto;
+      padding: 0 1rem;
+      width: 100%;
+    }
+
+    .intro {
+      margin-bottom: 2.5rem;
+    }
+
+    .intro h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #282828;
+      margin: 0 0 0.75rem;
+    }
+
+    .intro p {
+      font-size: 15px;
+      line-height: 1.75;
+      color: #282828;
+      margin: 0;
+    }
+
+    .tools {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .tool-card {
+      background: #fff;
+      border: 1px solid rgba(40,40,40,0.13);
+      border-radius: 14px;
+      overflow: hidden;
+      text-decoration: none;
+      display: flex;
+      transition: box-shadow 0.15s ease, transform 0.15s ease;
+    }
+
+    .tool-card:hover {
+      box-shadow: 0 4px 20px rgba(40,40,40,0.12);
+      transform: translateY(-2px);
+    }
+
+    .tool-card-accent {
+      width: 6px;
+      flex-shrink: 0;
+    }
+
+    .tool-card-body {
+      padding: 1.5rem 1.75rem;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .tool-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .tool-icon i { font-size: 22px; color: #fff; }
+
+    .tool-text { flex: 1; }
+
+    .tool-unit {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 0 0 4px;
+    }
+
+    .tool-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #282828;
+      margin: 0 0 6px;
+    }
+
+    .tool-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #717171;
+      margin: 0;
+    }
+
+    .tool-arrow {
+      font-size: 20px;
+      color: #717171;
+      flex-shrink: 0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 13px;
+      color: #717171;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-icon">
+      <i class="ti ti-school"></i>
+    </div>
+    <div class="header-text">
+      <p class="header-label">The Fred Hollows Foundation</p>
+      <p class="header-title">Advocacy Training Tools</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="intro">
+      <h1>Practice tools</h1>
+      <p>Two AI-powered tools to support your advocacy learning. Choose the activity that matches where you are in the course.</p>
+    </div>
+
+    <div class="tools">
+
+      <a href="/lobby-meeting" class="tool-card">
+        <div class="tool-card-accent" style="background: #4E8C80;"></div>
+        <div class="tool-card-body">
+          <div class="tool-icon" style="background: #4E8C80;">
+            <i class="ti ti-users"></i>
+          </div>
+          <div class="tool-text">
+            <p class="tool-unit" style="color: #4E8C80;">Unit 5 — Advocacy Meetings</p>
+            <p class="tool-title">Lobby Meeting Simulator</p>
+            <p class="tool-desc">Practise delivering your advocacy pitch in a simulated meeting with a Ministry of Health representative. Get structured feedback on your performance.</p>
+          </div>
+          <i class="ti ti-chevron-right tool-arrow"></i>
+        </div>
+      </a>
+
+      <a href="/brief-builder" class="tool-card">
+        <div class="tool-card-accent" style="background: #EA7600;"></div>
+        <div class="tool-card-body">
+          <div class="tool-icon" style="background: #EA7600;">
+            <i class="ti ti-file-description"></i>
+          </div>
+          <div class="tool-text">
+            <p class="tool-unit" style="color: #EA7600;">Unit 6 — Advocacy Tactics</p>
+            <p class="tool-title">Policy Brief Builder</p>
+            <p class="tool-desc">Develop a policy brief for your real project and decision maker. The AI coaches your message, asks targeted questions, and drafts a brief you can refine and download.</p>
+          </div>
+          <i class="ti ti-chevron-right tool-arrow"></i>
+        </div>
+      </a>
+
+    </div>
+  </main>
+
+  <footer>
+    The Fred Hollows Foundation &mdash; Advocacy Training Program
+  </footer>
+
+</body>
+</html>
