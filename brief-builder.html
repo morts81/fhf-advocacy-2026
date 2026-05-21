@@ -331,7 +331,12 @@ Address feasibility directly. Reference existing systems or budget lines where p
 The Fred Hollows Foundation
 [Note to user: add your name and contact details here]
 
-IMPORTANT: Never invent facts, statistics or examples. If the user hasn't provided specific evidence, flag it in the draft like this: [Add local statistic here] or [Insert country example if available].
+IMPORTANT: Never invent facts, statistics or examples. Where specific information is missing, use placeholders — but make them specific and actionable, not generic. Good placeholders name exactly what is needed and prompt the user to fill it in, for example:
+- [Add the number of people affected or on waiting lists in your province here]
+- [Name the specific districts or areas you want to target here]
+- [Add the name of the relevant national health plan or UHC framework here]
+- [Insert the cost per cataract surgery in your context if known]
+Avoid vague placeholders like [Insert country example if available] or [Add data here] — these don't help the user know what to find. If you cannot write a specific placeholder, write the sentence without the data point rather than leaving a vague gap.
 
 After producing the draft, say: "Please read through the draft carefully. When you're ready, click 'Start refinement' to strengthen it with my help."
 
@@ -388,6 +393,7 @@ Then immediately reproduce the complete final brief one more time so it can be d
       const [apiError,    setApiError]    = useState(null);
       const [refinementReady,  setRefinementReady]  = useState(false);
       const [showRefineBtn,    setShowRefineBtn]    = useState(false);
+      const [refineStarted,    setRefineStarted]    = useState(false);
       const [briefComplete,    setBriefComplete]    = useState(false);
       const refineBottom = useRef(null);
       const briefBottom  = useRef(null);
@@ -503,7 +509,7 @@ Then immediately reproduce the complete final brief one more time so it can be d
         setRefineMessages([]); setBriefMessages([]);
         setRefineInput(""); setBriefInput("");
         setLoading(false); setApiError(null);
-        setRefinementReady(false); setShowRefineBtn(false); setBriefComplete(false);
+        setRefinementReady(false); setShowRefineBtn(false); setRefineStarted(false); setBriefComplete(false);
       }
 
       const stepIndex = { "core-message": 0, "refine": 1, "context": 2, "chat": 3 }[screen];
@@ -697,10 +703,10 @@ Then immediately reproduce the complete final brief one more time so it can be d
               {briefMessages.map((msg, i) => <ChatBubble key={i} msg={msg} />)}
               {loading && <TypingIndicator />}
               {apiError && <ErrorBanner message={apiError} onDismiss={() => setApiError(null)} />}
-              {showRefineBtn && !loading && !briefComplete && (
+              {showRefineBtn && !refineStarted && !loading && !briefComplete && (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "1.25rem", background: SAGE_PALE, borderRadius: 8, border: `1px solid ${SAGE}` }}>
                   <p style={{ fontFamily: FONT, fontSize: 14, fontWeight: 600, color: SAGE_DARK, margin: 0 }}>Take a moment to read through the draft, then click below to start the refinement questions.</p>
-                  <button style={btnSageDark} onClick={() => sendBrief("I have read the draft and I am ready to refine it.")}>
+                  <button style={btnSageDark} onClick={() => { setRefineStarted(true); sendBrief("I have read the draft and I am ready to refine it."); }}>
                     <i className="ti ti-edit" />
                     Start refinement
                   </button>
