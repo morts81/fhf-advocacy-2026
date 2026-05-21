@@ -40,7 +40,7 @@
     const FONT        = "'Noto Sans', 'Segoe UI', sans-serif";
 
     const pageWrap       = { minHeight: "100vh", background: CHARCOAL_10, fontFamily: FONT, padding: "2rem 1rem" };
-    const cardWrap       = { maxWidth: 800, margin: "0 auto", background: WHITE, borderRadius: 14, border: `1px solid ${BORDER}`, overflow: "hidden" };
+    const cardWrap       = { maxWidth: 860, margin: "0 auto", background: WHITE, borderRadius: 14, border: `1px solid ${BORDER}`, overflow: "hidden" };
     const cardHdr        = { background: CHARCOAL, padding: "1.25rem 2rem", display: "flex", alignItems: "center", gap: 14 };
     const cardBody       = { padding: "2rem" };
     const btnPrimary     = { fontFamily: FONT, background: ORANGE, color: WHITE, border: "none", borderRadius: 8, padding: "0.7rem 1.5rem", fontSize: 15, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 };
@@ -558,12 +558,30 @@
                 </div>
               )}
               {briefComplete && !loading && (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "1.25rem", background: "#F0F8F5", borderRadius: 8, border: `1px solid ${SUCCESS}` }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "1.25rem", background: "#F0F8F5", borderRadius: 8, border: `1px solid ${SUCCESS}` }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <i className="ti ti-circle-check" style={{ color: SUCCESS, fontSize: 22 }} />
-                    <p style={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: SUCCESS, margin: 0 }}>Your brief is complete</p>
+                    <i className="ti ti-circle-check" style={{ color: SUCCESS, fontSize: 22, flexShrink: 0 }} />
+                    <p style={{ fontFamily: FONT, fontSize: 15, fontWeight: 700, color: SUCCESS, margin: 0 }}>Your brief is complete</p>
                   </div>
-                  <button style={btnSuccess} onClick={downloadBrief}>
+                  <div style={{ borderTop: `1px solid rgba(46,125,94,0.2)`, paddingTop: 12 }}>
+                    <p style={{ fontFamily: FONT, fontSize: 13, fontWeight: 700, color: SUCCESS, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Before you use this brief</p>
+                    <p style={{ fontFamily: FONT, fontSize: 14, color: CHARCOAL, margin: "0 0 8px", lineHeight: 1.6 }}>This draft was built with AI assistance. Before sharing it, please:</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
+                      {[
+                        "Check all facts, figures, and local details are accurate for your context",
+                        "Fill in any sections marked with [brackets]",
+                        "Edit any language that doesn't sound natural or doesn't reflect how you and your organisation would write",
+                        "Share it with your supervisor or Country Manager before using it in a real advocacy context",
+                      ].map((item, i) => (
+                        <div key={i} style={{ display: "flex", gap: 8, fontFamily: FONT, fontSize: 14, color: CHARCOAL, lineHeight: 1.6 }}>
+                          <span style={{ color: SUCCESS, flexShrink: 0, fontWeight: 700 }}>•</span>
+                          <span>{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p style={{ fontFamily: FONT, fontSize: 14, fontStyle: "italic", color: CHARCOAL, margin: 0, lineHeight: 1.6 }}>The brief should sound like it comes from you — not from a machine.</p>
+                  </div>
+                  <button style={{ ...btnSuccess, alignSelf: "flex-start" }} onClick={downloadBrief}>
                     <i className="ti ti-download" />
                     Download your brief
                   </button>
