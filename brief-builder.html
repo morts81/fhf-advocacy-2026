@@ -541,12 +541,15 @@ Then immediately reproduce the complete final brief one more time so it can be d
             <div style={cardBody}>
               <SectionLabel>Step 1 of 4</SectionLabel>
               <h2 style={{ fontFamily: FONT, fontSize: 22, fontWeight: 700, color: CHARCOAL, margin: "0 0 0.75rem" }}>Your Core Message</h2>
+              <p style={{ fontFamily: FONT, fontSize: 15, lineHeight: 1.75, color: CHARCOAL, margin: "0 0 0.75rem" }}>
+                Think about the advocacy objective your group has been working on. Now imagine you have just a few minutes to speak with a key decision maker you identified in Unit 3. What would you say?
+              </p>
               <p style={{ fontFamily: FONT, fontSize: 15, lineHeight: 1.75, color: CHARCOAL, margin: "0 0 1.5rem" }}>
-                Enter the core advocacy message you developed in Unit 5. All fields are required — don't worry about perfecting them here, you'll have a chance to refine them in the next step.
+                Write a core advocacy message that clearly communicates the issue and includes the following information.
               </p>
               <div style={{ background: SAGE_PALE, borderLeft: `3px solid ${SAGE_DARK}`, borderRadius: 8, padding: "1rem 1.25rem", marginBottom: "1.75rem" }}>
                 <p style={{ fontFamily: FONT, margin: 0, fontSize: 14, color: CHARCOAL, lineHeight: 1.7 }}>
-                  <strong>Tip:</strong> You can copy these directly from your Unit 5 activity. The next screen will help you sharpen them before building the brief.
+                  <strong>Tip:</strong> Keep it concise and persuasive. Use plain language and focus on why this matters now, and what the decision maker can do. The next screen will help you sharpen your message before building the brief.
                 </p>
               </div>
               <FormField label="Problem" hint="What is the issue you are trying to address, and why does it matter?" value={cm.problem} onChange={v => setCm(p => ({...p, problem: v}))} placeholder="e.g. In our province, thousands of people are living with avoidable blindness from cataracts because services are not reaching them." rows={3} />
