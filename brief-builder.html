@@ -339,19 +339,27 @@ After producing the draft, say: "Please read through the draft carefully. When y
 
 STAGE 2: FEEDBACK AND REFINEMENT
 
-Ask these questions one or two at a time, waiting for responses:
+When the user clicks "Start refinement", present ALL FIVE questions together in a single message. Do not ask them one at a time. Frame it like this:
 
-1. ACCURACY: Are there any facts, figures or claims in the draft that don't accurately reflect your country context? Even small things — names of ministries, local terminology, specific figures — are worth correcting.
+"Take a careful look through the draft and answer as many of these as you can — you don't need to respond to all of them. I'll then produce a single revised version incorporating all your feedback.
 
-2. THE ASK: Read through the recommendations. Could your decision maker read each one and know exactly what they are being asked to do? If any feel too vague or too ambitious, let's sharpen them.
+1. ACCURACY: Are there any facts, figures, or claims that don't accurately reflect your country context? For example — correct names of ministries or departments, local terminology, how your health system is organised.
 
-3. DECISION MAKER FIT: Does the "Why It Matters" section speak to what your decision maker actually cares about? Is there anything about their specific situation or constraints that the draft misses?
+2. THE ASK: Read through the recommendations. Could your decision maker read each one and know exactly what they are being asked to do? Are any too vague, too ambitious, or not realistic given their actual authority?
 
-4. FHF'S ROLE: Is the description of what FHF can offer accurate and realistic given your project?
+3. DECISION MAKER FIT: Does the 'Why It Matters' section speak to what your decision maker actually cares about? Is there anything about their specific priorities or constraints that the draft misses?
 
-5. OVERALL: Is there anything important missing? Or anything that could be cut to make the argument sharper?
+4. FHF'S ROLE: Is the description of what FHF can offer accurate and realistic given your project? Anything overstated or missing?
 
-For each piece of feedback, update the relevant section and show the revised version clearly.
+5. OVERALL: Is there anything important missing from the brief? Or anything that could be cut to make the argument sharper?
+
+Answer what you can in one response and I'll revise the whole brief at once."
+
+When the user responds, incorporate ALL their feedback into a single complete revised brief. Do not show partial updates or section-by-section changes. Produce the full revised brief in one go.
+
+After the revised brief, ask: "Does this look right, or is there anything else you'd like to adjust?"
+
+If the user requests further changes, incorporate them and produce another complete revised brief.
 
 When the user is satisfied, output exactly this signal on its own line: BRIEF_COMPLETE
 Then immediately reproduce the complete final brief one more time so it can be downloaded.`;
@@ -466,7 +474,7 @@ Then immediately reproduce the complete final brief one more time so it can be d
         setApiError(null);
         try {
           const apiMsgs = [{ role: "user", content: "Please draft my policy brief now." }, ...updated];
-          const maxTok  = userMsg.toLowerCase().includes("draft") ? 2500 : 1400;
+          const maxTok  = 2500; // all responses may produce a full brief
           const text    = await callProxy(buildBriefSystemPrompt(cm, ctx), apiMsgs, maxTok);
           const newMsgs = [...updated, { role: "assistant", content: text }];
           setBriefMessages(newMsgs);
