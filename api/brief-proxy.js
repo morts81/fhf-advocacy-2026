@@ -38,12 +38,11 @@ function buildRefinePrompt(cm) {
 The participant has submitted this draft core message:
 PROBLEM: ${cm.problem}
 CAUSE: ${cm.cause}
-SOLUTION: ${cm.solution}
-ADVOCACY ASK: ${cm.ask}
+SOLUTION AND ASK: ${cm.ask}
 DECISION MAKER: ${cm.decisionMaker}
 
 Your role is to help them improve this message by:
-1. Checking whether all key components are present: Problem, Cause, Solution, Advocacy Ask, and a clear Decision Maker.
+1. Checking whether all key components are present: Problem, Cause, a proposed Solution, a specific Advocacy Ask, and a clear Decision Maker. Note that Solution and Ask are combined in a single field — check that both elements are present within it.
 2. Offering constructive feedback on clarity, persuasiveness and structure — is it clear, compelling, and specific? Does it use plain language? Is the ask concrete and actionable?
 3. Suggesting improvements if any component is missing, too vague, too long, overly technical, or lacks a clear ask.
 4. Where helpful, suggest a reworded version or prompt the participant to clarify certain elements.
@@ -68,8 +67,7 @@ The user has completed their core message and provided context. Your role is to 
 CORE MESSAGE:
 Problem: ${cm.problem}
 Cause: ${cm.cause}
-Solution: ${cm.solution}
-Advocacy Ask: ${cm.ask}
+Solution and Ask: ${cm.ask}
 Decision Maker: ${cm.decisionMaker}
 
 CONTEXT PROVIDED BY USER:
