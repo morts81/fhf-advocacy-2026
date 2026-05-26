@@ -224,7 +224,7 @@
     // ── Main App ──────────────────────────────────────────────────────────────
     function App() {
       const [screen, setScreen] = useState("core-message"); // core-message | refine | context | chat
-      const [cm, setCm]         = useState({ problem: "", cause: "", solution: "", ask: "", decisionMaker: "" });
+      const [cm, setCm]         = useState({ problem: "", cause: "", ask: "", decisionMaker: "" });
       const [ctx, setCtx]       = useState({ dmPriorities: "", objections: "", localData: "", evidence: "", existingPlans: "", costBenefit: "", fhfRole: "" });
       const [refineMessages, setRefineMessages] = useState([]);
       const [briefMessages,  setBriefMessages]  = useState([]);
@@ -242,7 +242,7 @@
       useEffect(() => { refineBottom.current?.scrollIntoView({ behavior: "smooth" }); }, [refineMessages, loading, screen === "refine"]);
       useEffect(() => { briefBottom.current?.scrollIntoView({ behavior: "smooth" }); }, [briefMessages, loading, screen === "chat"]);
 
-      const cmValid = cm.problem.trim() && cm.cause.trim() && cm.solution.trim() && cm.ask.trim() && cm.decisionMaker.trim();
+      const cmValid = cm.problem.trim() && cm.cause.trim() && cm.ask.trim() && cm.decisionMaker.trim();
 
       async function callProxy(mode, messages, maxTokens = 1400) {
         const body = { mode, cm, messages, maxTokens };
@@ -346,7 +346,7 @@
 
       function reset() {
         setScreen("core-message");
-        setCm({ problem: "", cause: "", solution: "", ask: "", decisionMaker: "" });
+        setCm({ problem: "", cause: "", ask: "", decisionMaker: "" });
         setCtx({ dmPriorities: "", objections: "", localData: "", evidence: "", existingPlans: "", costBenefit: "", fhfRole: "" });
         setRefineMessages([]); setBriefMessages([]);
         setRefineInput(""); setBriefInput("");
@@ -399,12 +399,11 @@
                   <strong>Tip:</strong> Keep it concise and persuasive. Use plain language and focus on why this matters now, and what the decision maker can do. The next screen will help you sharpen your message before building the brief.
                 </p>
               </div>
-              <FormField label="Problem" hint="What is the issue you are trying to address, and why does it matter?" value={cm.problem} onChange={v => setCm(p => ({...p, problem: v}))} placeholder="e.g. In our province, thousands of people are living with avoidable blindness from cataracts because services are not reaching them." rows={3} />
-              <FormField label="Cause" hint="What underlying factors or gaps are contributing to the problem?" value={cm.cause} onChange={v => setCm(p => ({...p, cause: v}))} placeholder="e.g. There are no outreach services in rural districts, and surgical capacity is concentrated in the provincial hospital." rows={3} />
-              <FormField label="Solution" hint="What needs to change to address the problem effectively?" value={cm.solution} onChange={v => setCm(p => ({...p, solution: v}))} placeholder="e.g. The province should fund and roll out community-based cataract outreach to identify and refer patients in rural areas." rows={3} />
-              <FormField label="Advocacy ask" hint="What specific action do you want the decision maker to take?" value={cm.ask} onChange={v => setCm(p => ({...p, ask: v}))} placeholder="e.g. We are asking the Provincial Health Director to include funding for cataract outreach in next year's provincial health plan." rows={2} />
+              <FormField label="Problem" hint="What is the issue you are trying to address, and why does it matter?" value={cm.problem} onChange={v => setCm(p => ({...p, problem: v}))} placeholder="e.g. In Vietnam, only 60% of cataract surgeries result in a good visual outcome — well below the WHO benchmark of 80%. Thousands of people are living with avoidable vision loss." rows={3} />
+              <FormField label="Cause" hint="What underlying factors or gaps are contributing to the problem?" value={cm.cause} onChange={v => setCm(p => ({...p, cause: v}))} placeholder="e.g. There are no national standards for cataract surgical quality, no routine monitoring of outcomes, and surgical techniques vary widely between hospitals and providers." rows={3} />
+              <FormField label="Solution and ask" hint="What needs to change, and what specific action do you want this decision maker to take?" value={cm.ask} onChange={v => setCm(p => ({...p, ask: v}))} placeholder="e.g. The Ministry of Health should develop and endorse a National Protocol for Cataract Surgery. We are asking the Medical Services Administration to lead this process — convening a technical working group, piloting the protocol, and supporting national rollout." rows={4} />
               <Divider />
-              <FormField label="Decision maker" hint="Who is this brief aimed at? Include their title and institution." value={cm.decisionMaker} onChange={v => setCm(p => ({...p, decisionMaker: v}))} placeholder="e.g. Provincial Health Director, Kampong Cham Province" rows={2} />
+              <FormField label="Decision maker" hint="Who is this brief aimed at? Include their title and institution." value={cm.decisionMaker} onChange={v => setCm(p => ({...p, decisionMaker: v}))} placeholder="e.g. Director, Medical Services Administration, Ministry of Health" rows={2} />
               <button style={cmValid ? btnPrimary : btnDisabled} disabled={!cmValid} onClick={startRefine}>
                 <i className="ti ti-arrow-right" />
                 Continue to message refinement
