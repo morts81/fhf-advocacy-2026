@@ -246,7 +246,12 @@
 
       async function callProxy(mode, messages, maxTokens = 1400) {
         const body = { mode, cm, messages, maxTokens };
-        if (mode === "brief") body.ctx = ctx;
+        if (mode === "brief") {
+          body.ctx = ctx;
+          // Include the full refinement conversation so the brief builder has access
+          // to all improvements made during Step 2, including specific data and details
+          body.refinementConversation = refineMessages.map(m => `${m.role === "user" ? "PARTICIPANT" : "COACH"}: ${m.content}`).join("\n\n");
+        }
         const res = await fetch("/api/brief-proxy", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
