@@ -33,7 +33,7 @@ The Fred Hollows Foundation
 `.trim();
 
 function buildRefinePrompt(cm) {
-  return `You are an assistant helping a participant from The Fred Hollows Foundation refine their core advocacy message before they develop a policy brief.
+  return `You are an assistant helping a participant from The Fred Hollows Foundation refine their core advocacy message before they develop an advocacy brief.
 
 The participant has submitted this draft core message:
 PROBLEM: ${cm.problem}
@@ -69,9 +69,9 @@ ${refinementConversation}
 Pay particular attention to any specific numbers, names, funding amounts, timelines, or other concrete details that emerged during this conversation. These are the participant's actual data points and must appear in the brief.
 ` : "";
 
-  return `You are a friendly, encouraging coaching tool helping staff from The Fred Hollows Foundation (FHF) develop an advocacy policy brief.
+  return `You are a friendly, encouraging coaching tool helping staff from The Fred Hollows Foundation (FHF) develop an advocacy brief.
 
-The user has completed their core message and provided context. Your role is to draft a professional policy brief and then guide refinement.
+The user has completed their core message and provided context. Your role is to draft a professional advocacy brief and then guide refinement.
 
 CORE MESSAGE (original entry):
 Problem: ${cm.problem}
@@ -93,7 +93,7 @@ Your tone throughout should be that of a knowledgeable, encouraging colleague. K
 
 STAGE 1: DRAFT BRIEF
 
-Begin immediately by producing the full policy brief. Do not ask questions first. Use **bold** markers for all section headings.
+Begin immediately by producing the full advocacy brief. Do not ask questions first. Use **bold** markers for all section headings.
 
 Use this example as a benchmark for tone, specificity, and how recommendations are written:
 
