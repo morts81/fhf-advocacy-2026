@@ -480,18 +480,12 @@
                 value={ctx.dmPriorities} onChange={v => setCtx(p => ({...p, dmPriorities: v}))}
                 placeholder="e.g. The Provincial Health Director is under pressure to show improved service delivery indicators across the province, and is particularly focused on reducing preventable conditions."
                 rows={3} optional />
-              <FormField
-                label="What objections or concerns might they raise?"
-                hint="e.g. cost, competing priorities, workforce capacity — don't worry if you're not certain"
-                value={ctx.objections} onChange={v => setCtx(p => ({...p, objections: v}))}
-                placeholder="e.g. They may question whether there is budget available, and whether district hospitals have enough staff to take on more surgical load."
-                rows={3} optional />
 
               <Divider />
               <SectionLabel>Evidence and examples</SectionLabel>
               <FormField
-                label="Do you have any local data or statistics on the scale of the problem?"
-                hint="Even approximate figures, waiting list estimates, or data from a neighbouring region are useful"
+                label="Do you have any data or statistics on the scale of the problem?"
+                hint="Even approximate figures or data from other regions are useful"
                 value={ctx.localData} onChange={v => setCtx(p => ({...p, localData: v}))}
                 placeholder="e.g. District health staff estimate there are 200–300 people in the province awaiting cataract surgery. National data suggests X% of people aged 50+ have untreated cataract."
                 rows={3} optional />
@@ -505,12 +499,6 @@
               <Divider />
               <SectionLabel>Feasibility</SectionLabel>
               <FormField
-                label="Are there existing plans, strategies or budget lines your proposal could connect to?"
-                hint="e.g. annual health planning cycles, UHC frameworks, NCD strategies, eye health plans"
-                value={ctx.existingPlans} onChange={v => setCtx(p => ({...p, existingPlans: v}))}
-                placeholder="e.g. The province has an annual health planning process where districts submit priorities. There may be scope to include cataract outreach within the existing primary health care budget."
-                rows={3} optional />
-              <FormField
                 label="Any sense of the cost involved and the likely benefit or return?"
                 hint="Doesn't need to be precise — even a general sense of cost-effectiveness is helpful"
                 value={ctx.costBenefit} onChange={v => setCtx(p => ({...p, costBenefit: v}))}
@@ -520,7 +508,7 @@
               <Divider />
               <SectionLabel>FHF's role</SectionLabel>
               <FormField
-                label="What can The Fred Hollows Foundation realistically offer?"
+                label="What type of support can the Foundation offer or contribute?"
                 hint="e.g. technical assistance, evidence gathering, stakeholder coordination, piloting support, funding"
                 value={ctx.fhfRole} onChange={v => setCtx(p => ({...p, fhfRole: v}))}
                 placeholder="e.g. FHF can provide technical support, help coordinate with district health teams, assist with a pilot outreach activity, and support collection of basic data on unmet need."
