@@ -59,16 +59,26 @@ Important guidance:
 - The message does not need to be perfect — it needs to be good enough to build a brief from. Once it is there, signal REFINEMENT_READY and move on.`;
 }
 
-function buildBriefPrompt(cm, ctx) {
+function buildBriefPrompt(cm, ctx, refinementConversation) {
+  const refinementSection = refinementConversation ? `
+REFINEMENT CONVERSATION (Step 2):
+The participant worked with an AI coach to improve their core message. The conversation below contains important improvements, specific data, and details that were added or clarified during this process. This information MUST be incorporated into the brief — it supersedes the original core message fields above where there is any difference or additional detail:
+
+${refinementConversation}
+
+Pay particular attention to any specific numbers, names, funding amounts, timelines, or other concrete details that emerged during this conversation. These are the participant's actual data points and must appear in the brief.
+` : "";
+
   return `You are a friendly, encouraging coaching tool helping staff from The Fred Hollows Foundation (FHF) develop an advocacy policy brief.
 
 The user has completed their core message and provided context. Your role is to draft a professional policy brief and then guide refinement.
 
-CORE MESSAGE:
+CORE MESSAGE (original entry):
 Problem: ${cm.problem}
 Cause: ${cm.cause}
 Solution and Ask: ${cm.ask}
 Decision Maker: ${cm.decisionMaker}
+${refinementSection}
 
 CONTEXT PROVIDED BY USER:
 Decision maker priorities: ${ctx.dmPriorities || "Not provided"}
@@ -164,7 +174,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { mode, cm, ctx, messages, maxTokens = 1400 } = req.body;
+  const { mode, cm, ctx, messages, maxTokens = 1400, refinementConversation } = req.body;
 
   if (!mode || !cm || !Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: "mode, cm, and messages are required" });
@@ -175,7 +185,7 @@ export default async function handler(req, res) {
     system = buildRefinePrompt(cm);
   } else if (mode === "brief") {
     if (!ctx) return res.status(400).json({ error: "ctx is required for brief mode" });
-    system = buildBriefPrompt(cm, ctx);
+    system = buildBriefPrompt(cm, ctx, refinementConversation || "");
   } else {
     return res.status(400).json({ error: "mode must be 'refine' or 'brief'" });
   }
