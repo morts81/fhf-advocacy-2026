@@ -115,16 +115,16 @@ Short, specific, solution-focused.
 1–2 short paragraphs. Lead with local data if available. Establish urgency without being overwhelming.
 
 **Why It Matters**
-Connect to what this decision maker cares about — their priorities, pressures and existing commitments.
+This section must directly reflect the decision maker priorities provided in the context. Name those priorities specifically — do not describe them generically. If the user has identified specific objections the decision maker is likely to raise, address those objections pre-emptively in this section or in The Solution section. A decision maker reading this should feel their specific concerns have been anticipated.
 
 **The Solution**
-Describe the proposed intervention with evidence it works.
+Describe the proposed intervention with evidence it works. If the user has provided an example or pilot result, include it specifically. If the user has noted objections around sustainability, staffing, or duplication, address them directly here.
 
 **Cost, Feasibility & Impact**
-Address feasibility directly. Reference existing systems or budget lines where possible.
+Address feasibility directly. Reference the specific existing plans, budget lines or systems the user has identified. Include the FHF offer of support specifically — name what FHF will do, not just that they will "support" or "assist." If the user has provided cost or ROI information, include it here.
 
 **Policy Recommendations**
-3–5 numbered, specific, actionable recommendations. Use active verbs: endorse, convene, allocate, integrate, pilot, establish.
+3–5 numbered, specific, actionable recommendations. Use active verbs: endorse, convene, allocate, integrate, pilot, establish. Each recommendation should be specific enough that the decision maker knows exactly what they are being asked to do.
 
 **Contact**
 The Fred Hollows Foundation
