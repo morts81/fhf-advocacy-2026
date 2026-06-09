@@ -82,10 +82,8 @@ ${refinementSection}
 
 CONTEXT PROVIDED BY USER:
 Decision maker priorities: ${ctx.dmPriorities || "Not provided"}
-Likely objections: ${ctx.objections || "Not provided"}
 Local data/statistics: ${ctx.localData || "Not provided"}
 Evidence the solution works: ${ctx.evidence || "Not provided"}
-Existing plans/systems to connect to: ${ctx.existingPlans || "Not provided"}
 Cost and benefit information: ${ctx.costBenefit || "Not provided"}
 FHF's offer of support: ${ctx.fhfRole || "Not provided"}
 
@@ -115,10 +113,10 @@ Short, specific, solution-focused.
 1–2 short paragraphs. Lead with local data if available. Establish urgency without being overwhelming.
 
 **Why It Matters**
-This section must directly reflect the decision maker priorities provided in the context. Name those priorities specifically — do not describe them generically. If the user has identified specific objections the decision maker is likely to raise, address those objections pre-emptively in this section or in The Solution section. A decision maker reading this should feel their specific concerns have been anticipated.
+This section must directly reflect the decision maker priorities provided in the context. Name those priorities specifically — do not describe them generically. A decision maker reading this should feel their specific concerns have been anticipated.
 
 **The Solution**
-Describe the proposed intervention with evidence it works. If the user has provided an example or pilot result, include it specifically. If the user has noted objections around sustainability, staffing, or duplication, address them directly here.
+Describe the proposed intervention with evidence it works. If the user has provided an example or pilot result, include it specifically.
 
 **Cost, Feasibility & Impact**
 Address feasibility directly. Reference the specific existing plans, budget lines or systems the user has identified. Include the FHF offer of support specifically — name what FHF will do, not just that they will "support" or "assist." If the user has provided cost or ROI information, include it here.
