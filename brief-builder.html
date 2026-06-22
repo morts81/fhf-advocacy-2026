@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     body { margin: 0; background: #F2F2F2; font-family: 'Noto Sans', 'Segoe UI', sans-serif; }
@@ -20,7 +19,309 @@
 </head>
 <body>
   <div id="root"></div>
-  <script type="text/babel">
+  <script>
+const {
+  useState,
+  useRef,
+  useEffect
+} = React;
+const ORANGE = "#EA7600";
+const ORANGE_PALE = "#FEF3E6";
+const ORANGE_DARK = "#B85D00";
+const SAGE = "#A5C8BE";
+const SAGE_DARK = "#4E8C80";
+const SAGE_PALE = "#EBF5F3";
+const CHARCOAL = "#282828";
+const CHARCOAL_60 = "#717171";
+const CHARCOAL_10 = "#F2F2F2";
+const WHITE = "#FFFFFF";
+const BORDER = "rgba(40,40,40,0.13)";
+const BORDER_MED = "rgba(40,40,40,0.24)";
+const SUCCESS = "#2E7D5E";
+const FONT = "'Noto Sans', 'Segoe UI', sans-serif";
+const pageWrap = {
+  minHeight: "100vh",
+  background: CHARCOAL_10,
+  fontFamily: FONT,
+  padding: "2rem 1rem"
+};
+const cardWrap = {
+  maxWidth: 860,
+  margin: "0 auto",
+  background: WHITE,
+  borderRadius: 14,
+  border: `1px solid ${BORDER}`,
+  overflow: "hidden"
+};
+const cardHdr = {
+  background: CHARCOAL,
+  padding: "1.25rem 2rem",
+  display: "flex",
+  alignItems: "center",
+  gap: 14
+};
+const cardBody = {
+  padding: "2rem"
+};
+const btnPrimary = {
+  fontFamily: FONT,
+  background: ORANGE,
+  color: WHITE,
+  border: "none",
+  borderRadius: 8,
+  padding: "0.7rem 1.5rem",
+  fontSize: 15,
+  fontWeight: 600,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  gap: 6
+};
+const btnDisabled = {
+  ...btnPrimary,
+  background: CHARCOAL_10,
+  color: CHARCOAL_60,
+  border: `1px solid ${BORDER}`,
+  cursor: "not-allowed"
+};
+const btnOutlineSage = {
+  fontFamily: FONT,
+  background: "transparent",
+  color: SAGE,
+  border: `1.5px solid ${SAGE}`,
+  borderRadius: 8,
+  padding: "0.45rem 1.1rem",
+  fontSize: 14,
+  fontWeight: 600,
+  cursor: "pointer"
+};
+const btnSuccess = {
+  fontFamily: FONT,
+  background: SUCCESS,
+  color: WHITE,
+  border: "none",
+  borderRadius: 8,
+  padding: "0.65rem 1.5rem",
+  fontSize: 14,
+  fontWeight: 600,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  gap: 6
+};
+const btnSage = {
+  fontFamily: FONT,
+  background: SAGE_PALE,
+  color: SAGE_DARK,
+  border: `1.5px solid ${SAGE}`,
+  borderRadius: 8,
+  padding: "0.7rem 1.5rem",
+  fontSize: 15,
+  fontWeight: 600,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  gap: 6
+};
+const btnSageDark = {
+  fontFamily: FONT,
+  background: SAGE_DARK,
+  color: WHITE,
+  border: "none",
+  borderRadius: 8,
+  padding: "0.65rem 1.5rem",
+  fontSize: 14,
+  fontWeight: 600,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  gap: 6
+};
+const STEPS = ["Core message", "Refine message", "Your context", "Build brief"];
+function StepBar({
+  current
+}) {
+  return React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      padding: "0.9rem 2rem",
+      borderBottom: `1px solid ${BORDER}`,
+      background: WHITE,
+      gap: 0
+    }
+  }, STEPS.map((label, i) => {
+    const done = i < current;
+    const active = i === current;
+    const future = i > current;
+    return React.createElement(React.Fragment, {
+      key: i
+    }, React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 7,
+        flexShrink: 0
+      }
+    }, React.createElement("div", {
+      style: {
+        width: 26,
+        height: 26,
+        borderRadius: "50%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 12,
+        fontWeight: 700,
+        fontFamily: FONT,
+        background: done ? SAGE_DARK : active ? ORANGE : CHARCOAL_10,
+        color: done || active ? WHITE : CHARCOAL_60,
+        border: future ? `1.5px solid ${BORDER_MED}` : "none"
+      }
+    }, done ? React.createElement("i", {
+      className: "ti ti-check",
+      style: {
+        fontSize: 13
+      }
+    }) : i + 1), React.createElement("span", {
+      style: {
+        fontFamily: FONT,
+        fontSize: 13,
+        fontWeight: active ? 700 : 400,
+        color: active ? CHARCOAL : done ? SAGE_DARK : CHARCOAL_60,
+        whiteSpace: "nowrap"
+      }
+    }, label)), i < STEPS.length - 1 && React.createElement("div", {
+      style: {
+        flex: 1,
+        height: 2,
+        background: done ? SAGE_DARK : BORDER,
+        margin: "0 10px",
+        minWidth: 16
+      }
+    }));
+  }));
+}
+function Avatar({
+  icon,
+  bg,
+  size = 38
+}) {
+  return React.createElement("div", {
+    style: {
+      width: size,
+      height: size,
+      borderRadius: "50%",
+      background: bg,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }
+  }, React.createElement("i", {
+    className: `ti ti-${icon}`,
+    style: {
+      color: WHITE,
+      fontSize: size * 0.47
+    }
+  }));
+}
+function SectionLabel({
+  children
+}) {
+  return React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 11,
+      fontWeight: 700,
+      letterSpacing: "0.1em",
+      textTransform: "uppercase",
+      color: CHARCOAL_60,
+      margin: "0 0 10px"
+    }
+  }, children);
+}
+function Divider() {
+  return React.createElement("hr", {
+    style: {
+      border: "none",
+      borderTop: `1px solid ${BORDER}`,
+      margin: "1.5rem 0"
+    }
+  });
+}
+function FormField({
+  label,
+  hint,
+  value,
+  onChange,
+  rows = 3,
+  placeholder,
+  optional = false
+}) {
+  return React.createElement("div", {
+    style: {
+      marginBottom: "1.25rem"
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "baseline",
+      gap: 8,
+      marginBottom: 5
+    }
+  }, React.createElement("label", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 14,
+      fontWeight: 600,
+      color: CHARCOAL
+    }
+  }, label), optional && React.createElement("span", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 12,
+      color: CHARCOAL_60,
+      fontStyle: "italic"
+    }
+  }, "Optional")), hint && React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 13,
+      color: CHARCOAL_60,
+      margin: "0 0 7px",
+      lineHeight: 1.55
+    }
+  }, hint), React.createElement("textarea", {
+    value: value,
+    onChange: e => onChange(e.target.value),
+    rows: rows,
+    placeholder: placeholder,
+    style: {
+      width: "100%",
+      fontFamily: FONT,
+      fontSize: 14,
+      lineHeight: 1.6,
+      border: `1px solid ${BORDER_MED}`,
+      borderRadius: 8,
+      padding: "0.65rem 0.9rem",
+      color: CHARCOAL,
+      background: WHITE,
+      outline: "none",
+      resize: "vertical"
+    }
+  }));
+}
+function renderMessageContent(text, isUser = false) {
+  const lines = (text || "").split("\n");
+  return lines.map((line, i) => {
+    if (!line.trim()) return React.createElement("div", {
+      key: i,
+      style: {
+        height: 8
+      }
+    });
+    const html = line.replace(/\*\*(.+?)\*\*/g, "<strong>
     const { useState, useRef, useEffect } = React;
 
     // ── Design tokens ─────────────────────────────────────────────────────────
@@ -615,6 +916,1047 @@
     }
 
     ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+  </strong>");
+    if (!isUser && line.match(/^[-•]\s/)) {
+      return React.createElement("div", {
+        key: i,
+        style: {
+          display: "flex",
+          gap: 8,
+          lineHeight: 1.7,
+          marginBottom: 2
+        }
+      }, React.createElement("span", {
+        style: {
+          flexShrink: 0,
+          marginTop: 2
+        }
+      }, "•"), React.createElement("span", {
+        dangerouslySetInnerHTML: {
+          __html: html.replace(/^[-•]\s/, "")
+        }
+      }));
+    }
+    if (!isUser && line.match(/^\d+\.\s/)) {
+      return React.createElement("div", {
+        key: i,
+        style: {
+          lineHeight: 1.7,
+          marginBottom: 2
+        },
+        dangerouslySetInnerHTML: {
+          __html: html
+        }
+      });
+    }
+    return React.createElement("div", {
+      key: i,
+      style: {
+        lineHeight: 1.7
+      },
+      dangerouslySetInnerHTML: {
+        __html: html
+      }
+    });
+  });
+}
+function TypingIndicator() {
+  return React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "flex-end",
+      gap: 8
+    }
+  }, React.createElement("div", {
+    style: {
+      width: 30,
+      height: 30,
+      borderRadius: "50%",
+      background: SAGE,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }
+  }, React.createElement("i", {
+    className: "ti ti-robot",
+    style: {
+      fontSize: 14,
+      color: CHARCOAL
+    }
+  })), React.createElement("div", {
+    style: {
+      padding: "0.8rem 1.05rem",
+      background: WHITE,
+      border: `1px solid ${BORDER}`,
+      borderRadius: "3px 12px 12px 12px",
+      display: "flex",
+      gap: 5,
+      alignItems: "center"
+    }
+  }, [0, 1, 2].map(d => React.createElement("div", {
+    key: d,
+    style: {
+      width: 7,
+      height: 7,
+      borderRadius: "50%",
+      background: SAGE,
+      animation: "blink 1.2s ease-in-out infinite",
+      animationDelay: `${d * 0.22}s`
+    }
+  }))));
+}
+function ErrorBanner({
+  message,
+  onDismiss
+}) {
+  return React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "0.75rem 1rem",
+      background: "#FAE9E6",
+      borderRadius: 8,
+      border: "1px solid #E8A090",
+      fontFamily: FONT,
+      fontSize: 14,
+      color: "#7A2818"
+    }
+  }, React.createElement("i", {
+    className: "ti ti-alert-triangle",
+    style: {
+      fontSize: 16,
+      flexShrink: 0
+    }
+  }), React.createElement("span", null, message), React.createElement("button", {
+    onClick: onDismiss,
+    style: {
+      marginLeft: "auto",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontFamily: FONT,
+      fontSize: 13,
+      color: "#7A2818",
+      textDecoration: "underline"
+    }
+  }, "Dismiss"));
+}
+function ChatBubble({
+  msg
+}) {
+  const isUser = msg.role === "user";
+  return React.createElement("div", {
+    className: "fade-in",
+    style: {
+      display: "flex",
+      justifyContent: isUser ? "flex-end" : "flex-start",
+      alignItems: "flex-end",
+      gap: 8
+    }
+  }, !isUser && React.createElement("div", {
+    style: {
+      width: 30,
+      height: 30,
+      borderRadius: "50%",
+      background: SAGE,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+      marginBottom: 2
+    }
+  }, React.createElement("i", {
+    className: "ti ti-robot",
+    style: {
+      fontSize: 14,
+      color: CHARCOAL
+    }
+  })), React.createElement("div", {
+    style: {
+      maxWidth: isUser ? "72%" : "84%",
+      padding: "0.85rem 1.1rem",
+      borderRadius: isUser ? "12px 12px 3px 12px" : "3px 12px 12px 12px",
+      background: isUser ? ORANGE : WHITE,
+      border: isUser ? "none" : `1px solid ${BORDER}`,
+      fontFamily: FONT,
+      fontSize: 15,
+      lineHeight: 1.7,
+      color: isUser ? WHITE : CHARCOAL
+    }
+  }, renderMessageContent(msg.content.replace(/BRIEF_COMPLETE\s*/g, "").replace(/REFINEMENT_READY\s*/g, ""), isUser)));
+}
+function ChatInput({
+  value,
+  onChange,
+  onSend,
+  loading,
+  placeholder = "Type your response… (Enter to send, Shift+Enter for new line)"
+}) {
+  return React.createElement("div", {
+    style: {
+      borderTop: `1px solid ${BORDER}`,
+      padding: "1rem 2rem",
+      background: WHITE,
+      flexShrink: 0
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, React.createElement("textarea", {
+    value: value,
+    onChange: e => onChange(e.target.value),
+    onKeyDown: e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        onSend();
+      }
+    },
+    placeholder: placeholder,
+    disabled: loading,
+    rows: 4,
+    style: {
+      flex: 1,
+      resize: "none",
+      fontFamily: FONT,
+      border: `1px solid ${BORDER_MED}`,
+      borderRadius: 8,
+      padding: "0.65rem 0.9rem",
+      fontSize: 15,
+      lineHeight: 1.55,
+      color: CHARCOAL,
+      background: WHITE,
+      outline: "none",
+      minHeight: 100,
+      maxHeight: 200
+    }
+  }), React.createElement("button", {
+    style: {
+      ...btnPrimary,
+      opacity: loading || !value.trim() ? 0.4 : 1
+    },
+    onClick: onSend,
+    disabled: loading || !value.trim()
+  }, React.createElement("i", {
+    className: "ti ti-send"
+  }), "Send")));
+}
+function extractBriefText(messages) {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i];
+    if (m.role === "assistant" && (m.content.match(/\*\*/g) || []).length >= 8) {
+      return m.content.replace(/BRIEF_COMPLETE\s*/g, "").replace(/REFINEMENT_READY\s*/g, "").trim();
+    }
+  }
+  return null;
+}
+function App() {
+  const [screen, setScreen] = useState("core-message");
+  const [cm, setCm] = useState({
+    problem: "",
+    cause: "",
+    ask: "",
+    decisionMaker: ""
+  });
+  const [ctx, setCtx] = useState({
+    dmPriorities: "",
+    objections: "",
+    localData: "",
+    evidence: "",
+    existingPlans: "",
+    costBenefit: "",
+    fhfRole: ""
+  });
+  const [refineMessages, setRefineMessages] = useState([]);
+  const [briefMessages, setBriefMessages] = useState([]);
+  const [refineInput, setRefineInput] = useState("");
+  const [briefInput, setBriefInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState(null);
+  const [refinementReady, setRefinementReady] = useState(false);
+  const [showRefineBtn, setShowRefineBtn] = useState(false);
+  const [refineStarted, setRefineStarted] = useState(false);
+  const [briefComplete, setBriefComplete] = useState(false);
+  const refineBottom = useRef(null);
+  const briefBottom = useRef(null);
+  useEffect(() => {
+    refineBottom.current?.scrollIntoView({
+      behavior: "smooth"
+    });
+  }, [refineMessages, loading, screen === "refine"]);
+  useEffect(() => {
+    briefBottom.current?.scrollIntoView({
+      behavior: "smooth"
+    });
+  }, [briefMessages, loading, screen === "chat"]);
+  const cmValid = cm.problem.trim() && cm.cause.trim() && cm.ask.trim() && cm.decisionMaker.trim();
+  async function callProxy(mode, messages, maxTokens = 1400) {
+    const body = {
+      mode,
+      cm,
+      messages,
+      maxTokens
+    };
+    if (mode === "brief") {
+      body.ctx = ctx;
+      body.refinementConversation = refineMessages.map(m => `${m.role === "user" ? "PARTICIPANT" : "COACH"}: ${m.content}`).join("\n\n");
+    }
+    const res = await fetch("/api/brief-proxy", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(`Request failed (${res.status}). Please try again.`);
+    const data = await res.json();
+    if (!data.text) throw new Error("No response received. Please try again.");
+    return data.text;
+  }
+  async function startRefine() {
+    setScreen("refine");
+    setLoading(true);
+    setApiError(null);
+    try {
+      const text = await callProxy("refine", [{
+        role: "user",
+        content: "Please review my core message and give me feedback."
+      }]);
+      setRefineMessages([{
+        role: "assistant",
+        content: text
+      }]);
+      if (text.includes("REFINEMENT_READY")) setRefinementReady(true);
+    } catch (err) {
+      setApiError(err.message);
+    }
+    setLoading(false);
+  }
+  async function sendRefine() {
+    const userMsg = refineInput.trim();
+    if (!userMsg || loading) return;
+    setRefineInput("");
+    const updated = [...refineMessages, {
+      role: "user",
+      content: userMsg
+    }];
+    setRefineMessages(updated);
+    setLoading(true);
+    setApiError(null);
+    try {
+      const apiMsgs = [{
+        role: "user",
+        content: "Please review my core message and give me feedback."
+      }, ...updated];
+      const text = await callProxy("refine", apiMsgs);
+      setRefineMessages([...updated, {
+        role: "assistant",
+        content: text
+      }]);
+      if (text.includes("REFINEMENT_READY")) setRefinementReady(true);
+    } catch (err) {
+      setApiError(err.message);
+    }
+    setLoading(false);
+  }
+  async function startBrief() {
+    setScreen("chat");
+    setLoading(true);
+    setApiError(null);
+    try {
+      const text = await callProxy("brief", [{
+        role: "user",
+        content: "Please draft my policy brief now."
+      }], 2500);
+      setBriefMessages([{
+        role: "assistant",
+        content: text
+      }]);
+      const headerCount = (text.match(/\*\*/g) || []).length;
+      if (headerCount >= 8) setShowRefineBtn(true);
+      if (text.includes("BRIEF_COMPLETE")) setBriefComplete(true);
+    } catch (err) {
+      setApiError(err.message);
+    }
+    setLoading(false);
+  }
+  async function sendBrief(override) {
+    const userMsg = (override || briefInput).trim();
+    if (!userMsg || loading) return;
+    setBriefInput("");
+    setShowRefineBtn(false);
+    const updated = [...briefMessages, {
+      role: "user",
+      content: userMsg
+    }];
+    setBriefMessages(updated);
+    setLoading(true);
+    setApiError(null);
+    try {
+      const apiMsgs = [{
+        role: "user",
+        content: "Please draft my policy brief now."
+      }, ...updated];
+      const text = await callProxy("brief", apiMsgs, 2500);
+      const newMsgs = [...updated, {
+        role: "assistant",
+        content: text
+      }];
+      setBriefMessages(newMsgs);
+      const headerCount = (text.match(/\*\*/g) || []).length;
+      if (headerCount >= 8 && !text.includes("BRIEF_COMPLETE")) setShowRefineBtn(true);
+      if (text.includes("BRIEF_COMPLETE")) setBriefComplete(true);
+    } catch (err) {
+      setApiError(err.message);
+    }
+    setLoading(false);
+  }
+  function downloadBrief() {
+    const brief = extractBriefText(briefMessages);
+    if (!brief) return;
+    const clean = brief.replace(/\*\*/g, "").trim();
+    const blob = new Blob([clean], {
+      type: "text/plain"
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "policy-brief.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  function reset() {
+    setScreen("core-message");
+    setCm({
+      problem: "",
+      cause: "",
+      ask: "",
+      decisionMaker: ""
+    });
+    setCtx({
+      dmPriorities: "",
+      objections: "",
+      localData: "",
+      evidence: "",
+      existingPlans: "",
+      costBenefit: "",
+      fhfRole: ""
+    });
+    setRefineMessages([]);
+    setBriefMessages([]);
+    setRefineInput("");
+    setBriefInput("");
+    setLoading(false);
+    setApiError(null);
+    setRefinementReady(false);
+    setShowRefineBtn(false);
+    setRefineStarted(false);
+    setBriefComplete(false);
+  }
+  const stepIndex = {
+    "core-message": 0,
+    "refine": 1,
+    "context": 2,
+    "chat": 3
+  }[screen];
+  function Header({
+    subtitle
+  }) {
+    return React.createElement("div", {
+      style: {
+        ...cardHdr,
+        justifyContent: "space-between"
+      }
+    }, React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 12
+      }
+    }, React.createElement(Avatar, {
+      icon: "file-description",
+      bg: ORANGE
+    }), React.createElement("div", null, React.createElement("p", {
+      style: {
+        fontFamily: FONT,
+        margin: 0,
+        fontSize: 17,
+        fontWeight: 700,
+        color: WHITE
+      }
+    }, "Advocacy Brief Builder"))), screen !== "core-message" && React.createElement("button", {
+      style: btnOutlineSage,
+      onClick: reset
+    }, "Start over"));
+  }
+  if (screen === "core-message") return React.createElement("div", {
+    style: pageWrap
+  }, React.createElement("div", {
+    style: cardWrap
+  }, React.createElement(Header, null), React.createElement(StepBar, {
+    current: 0
+  }), React.createElement("div", {
+    style: {
+      background: SAGE_PALE,
+      borderBottom: `1px solid ${BORDER}`,
+      padding: "1.25rem 2rem"
+    }
+  }, React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 14,
+      lineHeight: 1.7,
+      color: CHARCOAL,
+      margin: "0 0 0.5rem"
+    }
+  }, "An advocacy brief is a short, persuasive document that presents a problem and recommends action to a decision maker."), React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 14,
+      lineHeight: 1.7,
+      color: CHARCOAL,
+      margin: "0 0 0.5rem"
+    }
+  }, "This activity guides you through building a real brief for your own project in four steps. An AI coach will help refine your message, ask about your context, and draft a brief you can review, improve, and download."), React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 14,
+      lineHeight: 1.7,
+      color: CHARCOAL,
+      fontWeight: 700,
+      margin: 0
+    }
+  }, "The more specific you are about your country context and decision maker, the stronger your brief will be.")), React.createElement("div", {
+    style: cardBody
+  }, React.createElement(SectionLabel, null, "Step 1 of 4"), React.createElement("h2", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 22,
+      fontWeight: 700,
+      color: CHARCOAL,
+      margin: "0 0 0.75rem"
+    }
+  }, "Your Core Message"), React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 15,
+      lineHeight: 1.75,
+      color: CHARCOAL,
+      margin: "0 0 0.75rem"
+    }
+  }, "Think about the advocacy objective your group has been working on. Now imagine you have just a few minutes to speak with a key decision maker you identified in Unit 3. What would you say?"), React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 15,
+      lineHeight: 1.75,
+      color: CHARCOAL,
+      margin: "0 0 1.5rem"
+    }
+  }, "Write a core advocacy message that clearly communicates the issue and includes the following information."), React.createElement("div", {
+    style: {
+      background: SAGE_PALE,
+      borderLeft: `3px solid ${SAGE_DARK}`,
+      borderRadius: 8,
+      padding: "1rem 1.25rem",
+      marginBottom: "1.75rem"
+    }
+  }, React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      margin: 0,
+      fontSize: 14,
+      color: CHARCOAL,
+      lineHeight: 1.7
+    }
+  }, React.createElement("strong", null, "Tip:"), " Keep it concise and persuasive. Use plain language and focus on why this matters now, and what the decision maker can do. The next screen will help you sharpen your message before building the brief.")), React.createElement(FormField, {
+    label: "Problem",
+    hint: "What is the issue you are trying to address, and why does it matter?",
+    value: cm.problem,
+    onChange: v => setCm(p => ({
+      ...p,
+      problem: v
+    })),
+    placeholder: "e.g. In Vietnam, only 60% of cataract surgeries result in a good visual outcome — well below the WHO benchmark of 80%. Improving surgical quality is a cost-effective investment that reduces social and economic burdens.",
+    rows: 3
+  }), React.createElement(FormField, {
+    label: "Cause",
+    hint: "What underlying factors or gaps are contributing to the problem?",
+    value: cm.cause,
+    onChange: v => setCm(p => ({
+      ...p,
+      cause: v
+    })),
+    placeholder: "e.g. There are no national standards for cataract surgical quality, no routine monitoring of outcomes, and surgical techniques vary widely between hospitals and providers.",
+    rows: 3
+  }), React.createElement(FormField, {
+    label: "Solution and ask",
+    hint: "What needs to change, and what specific action do you want this decision maker to take?",
+    value: cm.ask,
+    onChange: v => setCm(p => ({
+      ...p,
+      ask: v
+    })),
+    placeholder: "e.g. The Ministry of Health should develop and endorse a National Protocol for Cataract Surgery. We are asking the Medical Services Administration to lead this process — convening a technical working group, piloting the protocol, and supporting national rollout.",
+    rows: 4
+  }), React.createElement(Divider, null), React.createElement(FormField, {
+    label: "Decision maker",
+    hint: "Who is this brief aimed at? Include their title and institution.",
+    value: cm.decisionMaker,
+    onChange: v => setCm(p => ({
+      ...p,
+      decisionMaker: v
+    })),
+    placeholder: "e.g. Director, Medical Services Administration, Ministry of Health",
+    rows: 2
+  }), React.createElement("button", {
+    style: cmValid ? btnPrimary : btnDisabled,
+    disabled: !cmValid,
+    onClick: startRefine
+  }, React.createElement("i", {
+    className: "ti ti-arrow-right"
+  }), "Continue to message refinement"))));
+  if (screen === "refine") return React.createElement("div", {
+    style: pageWrap
+  }, React.createElement("div", {
+    style: {
+      ...cardWrap,
+      display: "flex",
+      flexDirection: "column",
+      minHeight: "88vh"
+    }
+  }, React.createElement(Header, null), React.createElement(StepBar, {
+    current: 1
+  }), React.createElement("div", {
+    style: {
+      background: ORANGE_PALE,
+      borderBottom: `1px solid ${BORDER}`,
+      padding: "0.85rem 2rem",
+      flexShrink: 0
+    }
+  }, React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 14,
+      fontWeight: 600,
+      color: ORANGE_DARK,
+      margin: "0 0 2px"
+    }
+  }, "Step 2 — Refine your core message"), React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 13,
+      color: CHARCOAL,
+      margin: 0,
+      lineHeight: 1.55
+    }
+  }, "Review the AI's feedback and make any improvements before building your brief. When your message is strong, you'll be able to continue to the next step.")), React.createElement("div", {
+    style: {
+      flex: 1,
+      overflowY: "auto",
+      padding: "1.5rem 2rem",
+      display: "flex",
+      flexDirection: "column",
+      gap: 16,
+      background: CHARCOAL_10
+    }
+  }, refineMessages.map((msg, i) => React.createElement(ChatBubble, {
+    key: i,
+    msg: msg
+  })), loading && React.createElement(TypingIndicator, null), apiError && React.createElement(ErrorBanner, {
+    message: apiError,
+    onDismiss: () => setApiError(null)
+  }), refinementReady && !loading && React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 10,
+      padding: "1.25rem",
+      background: SAGE_PALE,
+      borderRadius: 8,
+      border: `1px solid ${SAGE}`
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8
+    }
+  }, React.createElement("i", {
+    className: "ti ti-circle-check",
+    style: {
+      color: SAGE_DARK,
+      fontSize: 20
+    }
+  }), React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 14,
+      fontWeight: 600,
+      color: SAGE_DARK,
+      margin: 0
+    }
+  }, "Your core message is ready — continue to the next step.")), React.createElement("button", {
+    style: btnPrimary,
+    onClick: () => setScreen("context")
+  }, React.createElement("i", {
+    className: "ti ti-arrow-right"
+  }), "Continue to context questions")), React.createElement("div", {
+    ref: refineBottom
+  })), !refinementReady && React.createElement(ChatInput, {
+    value: refineInput,
+    onChange: setRefineInput,
+    onSend: sendRefine,
+    loading: loading
+  })));
+  if (screen === "context") return React.createElement("div", {
+    style: pageWrap
+  }, React.createElement("div", {
+    style: cardWrap
+  }, React.createElement(Header, null), React.createElement(StepBar, {
+    current: 2
+  }), React.createElement("div", {
+    style: cardBody
+  }, React.createElement(SectionLabel, null, "Step 3 of 4"), React.createElement("h2", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 22,
+      fontWeight: 700,
+      color: CHARCOAL,
+      margin: "0 0 0.75rem"
+    }
+  }, "Your Context"), React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 15,
+      lineHeight: 1.75,
+      color: CHARCOAL,
+      margin: "0 0 0.5rem"
+    }
+  }, "This information will help make your brief specific and compelling. Share as much or as little as you have — all fields are optional."), React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 14,
+      lineHeight: 1.7,
+      color: CHARCOAL_60,
+      margin: "0 0 1.75rem"
+    }
+  }, "You know your context better than the AI does. Even rough notes or best guesses are more useful than leaving a field blank."), React.createElement(SectionLabel, null, "About your decision maker"), React.createElement(FormField, {
+    label: "What do you think they care most about right now?",
+    hint: "e.g. budget pressures, UHC targets, service quality, political visibility — your best guess is fine",
+    value: ctx.dmPriorities,
+    onChange: v => setCtx(p => ({
+      ...p,
+      dmPriorities: v
+    })),
+    placeholder: "e.g. The Provincial Health Director is under pressure to show improved service delivery indicators across the province, and is particularly focused on reducing preventable conditions.",
+    rows: 3,
+    optional: true
+  }), React.createElement(Divider, null), React.createElement(SectionLabel, null, "Evidence and examples"), React.createElement(FormField, {
+    label: "Do you have any data or statistics on the scale of the problem?",
+    hint: "Even approximate figures or data from other regions are useful",
+    value: ctx.localData,
+    onChange: v => setCtx(p => ({
+      ...p,
+      localData: v
+    })),
+    placeholder: "e.g. District health staff estimate there are 200–300 people in the province awaiting cataract surgery. National data suggests X% of people aged 50+ have untreated cataract.",
+    rows: 3,
+    optional: true
+  }), React.createElement(FormField, {
+    label: "Is there an example that shows your proposed solution could work?",
+    hint: "A pilot result, success story from your project, or a comparable country example",
+    value: ctx.evidence,
+    onChange: v => setCtx(p => ({
+      ...p,
+      evidence: v
+    })),
+    placeholder: "e.g. A cataract outreach pilot in one district last year identified and referred 45 patients for surgery. A similar approach in neighbouring country X achieved...",
+    rows: 3,
+    optional: true
+  }), React.createElement(Divider, null), React.createElement(SectionLabel, null, "Feasibility"), React.createElement(FormField, {
+    label: "Any sense of the cost involved and the likely benefit or return?",
+    hint: "Doesn't need to be precise — even a general sense of cost-effectiveness is helpful",
+    value: ctx.costBenefit,
+    onChange: v => setCtx(p => ({
+      ...p,
+      costBenefit: v
+    })),
+    placeholder: "e.g. Cataract surgery is widely recognised as one of the most cost-effective health interventions. The main costs would be outreach transport, staff time, and consumables for surgery.",
+    rows: 3,
+    optional: true
+  }), React.createElement(Divider, null), React.createElement(SectionLabel, null, "FHF's role"), React.createElement(FormField, {
+    label: "What type of support can the Foundation offer or contribute?",
+    hint: "e.g. technical assistance, evidence gathering, stakeholder coordination, piloting support, funding",
+    value: ctx.fhfRole,
+    onChange: v => setCtx(p => ({
+      ...p,
+      fhfRole: v
+    })),
+    placeholder: "e.g. FHF can provide technical support, help coordinate with district health teams, assist with a pilot outreach activity, and support collection of basic data on unmet need.",
+    rows: 3,
+    optional: true
+  }), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 12,
+      marginTop: "0.5rem"
+    }
+  }, React.createElement("button", {
+    style: btnSage,
+    onClick: () => setScreen("refine")
+  }, React.createElement("i", {
+    className: "ti ti-arrow-left"
+  }), "Back"), React.createElement("button", {
+    style: btnPrimary,
+    onClick: startBrief
+  }, React.createElement("i", {
+    className: "ti ti-file-text"
+  }), "Build my brief")))));
+  if (screen === "chat") return React.createElement("div", {
+    style: pageWrap
+  }, React.createElement("div", {
+    style: {
+      ...cardWrap,
+      display: "flex",
+      flexDirection: "column",
+      minHeight: "88vh"
+    }
+  }, React.createElement(Header, null), React.createElement(StepBar, {
+    current: 3
+  }), React.createElement("div", {
+    style: {
+      background: ORANGE_PALE,
+      borderBottom: `1px solid ${BORDER}`,
+      padding: "0.7rem 2rem",
+      flexShrink: 0
+    }
+  }, React.createElement("span", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 12,
+      fontWeight: 700,
+      color: ORANGE_DARK,
+      textTransform: "uppercase",
+      letterSpacing: "0.08em",
+      marginRight: 8
+    }
+  }, "Decision maker:"), React.createElement("span", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 13,
+      color: CHARCOAL
+    }
+  }, cm.decisionMaker)), React.createElement("div", {
+    style: {
+      flex: 1,
+      overflowY: "auto",
+      padding: "1.5rem 2rem",
+      display: "flex",
+      flexDirection: "column",
+      gap: 16,
+      background: CHARCOAL_10
+    }
+  }, briefMessages.map((msg, i) => React.createElement(ChatBubble, {
+    key: i,
+    msg: msg
+  })), loading && React.createElement(TypingIndicator, null), apiError && React.createElement(ErrorBanner, {
+    message: apiError,
+    onDismiss: () => setApiError(null)
+  }), showRefineBtn && !refineStarted && !loading && !briefComplete && React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 10,
+      padding: "1.25rem",
+      background: SAGE_PALE,
+      borderRadius: 8,
+      border: `1px solid ${SAGE}`
+    }
+  }, React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 14,
+      fontWeight: 600,
+      color: SAGE_DARK,
+      margin: 0
+    }
+  }, "Take a moment to read through the draft, then click below to start the refinement questions."), React.createElement("button", {
+    style: btnSageDark,
+    onClick: () => {
+      setRefineStarted(true);
+      sendBrief("I have read the draft and I am ready to refine it.");
+    }
+  }, React.createElement("i", {
+    className: "ti ti-edit"
+  }), "Start refinement")), briefComplete && !loading && React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 12,
+      padding: "1.25rem",
+      background: "#F0F8F5",
+      borderRadius: 8,
+      border: `1px solid ${SUCCESS}`
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8
+    }
+  }, React.createElement("i", {
+    className: "ti ti-circle-check",
+    style: {
+      color: SUCCESS,
+      fontSize: 22,
+      flexShrink: 0
+    }
+  }), React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 15,
+      fontWeight: 700,
+      color: SUCCESS,
+      margin: 0
+    }
+  }, "Your brief is complete")), React.createElement("div", {
+    style: {
+      borderTop: `1px solid rgba(46,125,94,0.2)`,
+      paddingTop: 12
+    }
+  }, React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 13,
+      fontWeight: 700,
+      color: SUCCESS,
+      margin: "0 0 8px",
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "Before you use this brief"), React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 14,
+      color: CHARCOAL,
+      margin: "0 0 8px",
+      lineHeight: 1.6
+    }
+  }, "This draft was built with AI assistance. Before sharing it, please:"), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 6,
+      marginBottom: 10
+    }
+  }, ["Check all facts, figures, and local details are accurate for your context", "Fill in any sections marked with [brackets]", "Edit any language that doesn't sound natural or doesn't reflect how you and your organisation would write", "Share it with your supervisor or Country Manager before using it in a real advocacy context"].map((item, i) => React.createElement("div", {
+    key: i,
+    style: {
+      display: "flex",
+      gap: 8,
+      fontFamily: FONT,
+      fontSize: 14,
+      color: CHARCOAL,
+      lineHeight: 1.6
+    }
+  }, React.createElement("span", {
+    style: {
+      color: SUCCESS,
+      flexShrink: 0,
+      fontWeight: 700
+    }
+  }, "•"), React.createElement("span", null, item)))), React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 14,
+      fontStyle: "italic",
+      color: CHARCOAL,
+      margin: 0,
+      lineHeight: 1.6
+    }
+  }, "The brief should sound like it comes from you — not from a machine.")), React.createElement("button", {
+    style: {
+      ...btnSuccess,
+      alignSelf: "flex-start"
+    },
+    onClick: downloadBrief
+  }, React.createElement("i", {
+    className: "ti ti-download"
+  }), "Download your brief"), React.createElement("div", {
+    style: {
+      borderTop: `1px solid rgba(46,125,94,0.2)`,
+      paddingTop: 12
+    }
+  }, React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      margin: "0 0 6px",
+      fontSize: 14,
+      fontWeight: 700,
+      color: SAGE_DARK
+    }
+  }, "Share your feedback"), React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      margin: "0 0 10px",
+      fontSize: 14,
+      color: CHARCOAL,
+      lineHeight: 1.6
+    }
+  }, "Thank you for completing the Advocacy Brief Builder. We'd love to hear how it went — your feedback helps us improve the experience for future participants. This will only take a minute."), React.createElement("a", {
+    href: "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=ePRrVoSTik65BD8ERSnO1ofA6RE9mC9FgCllm_u2sblUQldJWUlXWkk0VTA2OVlBQU1TSVdMRVlMMC4u",
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      fontFamily: FONT,
+      fontSize: 14,
+      fontWeight: 600,
+      color: SAGE_DARK,
+      textDecoration: "underline",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 5
+    }
+  }, React.createElement("i", {
+    className: "ti ti-external-link",
+    style: {
+      fontSize: 15
+    }
+  }), "Give feedback"))), React.createElement("div", {
+    ref: briefBottom
+  })), !briefComplete ? React.createElement(ChatInput, {
+    value: briefInput,
+    onChange: setBriefInput,
+    onSend: () => sendBrief(),
+    loading: loading
+  }) : React.createElement("div", {
+    style: {
+      borderTop: `1px solid ${BORDER}`,
+      padding: "1rem 2rem",
+      background: WHITE,
+      flexShrink: 0,
+      display: "flex",
+      gap: 10
+    }
+  }, React.createElement("button", {
+    style: btnSage,
+    onClick: reset
+  }, React.createElement("i", {
+    className: "ti ti-refresh"
+  }), "Start a new brief"), React.createElement("button", {
+    style: btnPrimary,
+    onClick: downloadBrief
+  }, React.createElement("i", {
+    className: "ti ti-download"
+  }), "Download brief"))));
+  return null;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App, null));
+</script>
 </body>
 </html>
