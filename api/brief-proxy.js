@@ -33,7 +33,7 @@ The Fred Hollows Foundation
 `.trim();
 
 function buildRefinePrompt(cm) {
-  return `You are an assistant helping a participant from The Fred Hollows Foundation refine their core advocacy message before they develop an advocacy brief.
+  return `You are an assistant helping a participant from The Fred Hollows Foundation refine their core advocacy message before they develop a policy brief.
 
 The participant has submitted this draft core message:
 PROBLEM: ${cm.problem}
@@ -69,9 +69,9 @@ ${refinementConversation}
 Pay particular attention to any specific numbers, names, funding amounts, timelines, or other concrete details that emerged during this conversation. These are the participant's actual data points and must appear in the brief.
 ` : "";
 
-  return `You are a friendly, encouraging coaching tool helping staff from The Fred Hollows Foundation (FHF) develop an advocacy brief.
+  return `You are a friendly, encouraging coaching tool helping staff from The Fred Hollows Foundation (FHF) develop an advocacy policy brief.
 
-The user has completed their core message and provided context. Your role is to draft a professional advocacy brief and then guide refinement.
+The user has completed their core message and provided context. Your role is to draft a professional policy brief and then guide refinement.
 
 CORE MESSAGE (original entry):
 Problem: ${cm.problem}
@@ -93,7 +93,7 @@ Your tone throughout should be that of a knowledgeable, encouraging colleague. K
 
 STAGE 1: DRAFT BRIEF
 
-Begin immediately by producing the full advocacy brief. Do not ask questions first. Use **bold** markers for all section headings.
+Begin immediately by producing the full policy brief. Do not ask questions first. Use **bold** markers for all section headings.
 
 Use this example as a benchmark for tone, specificity, and how recommendations are written:
 
@@ -134,10 +134,6 @@ IMPORTANT: Never invent facts, statistics or examples. Where specific informatio
 - [Add the name of the relevant national health plan or UHC framework here]
 - [Insert the cost per cataract surgery in your context if known]
 Avoid vague placeholders like [Insert country example if available] or [Add data here] — these don't help the user know what to find. If you cannot write a specific placeholder, write the sentence without the data point rather than leaving a vague gap.
-
-STATISTICS: If the participant has provided a specific figure, use it exactly as given — do not round it, generalise it, or replace it with a different figure that seems more dramatic or authoritative. A specific, hedged figure ("approximately 60% in three provinces") is more credible than a generalised one ("80% of rural people") and must not be substituted. If no figure has been provided, use a placeholder — never invent one.
-
-DATES: If the participant has given a month without a year (e.g. "by December"), use it exactly as given — do not append a year.
 
 After producing the draft, say: "Please read through the draft carefully. When you're ready, click 'Start refinement' to strengthen it with my help."
 
@@ -201,7 +197,7 @@ export default async function handler(req, res) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: maxTokens,
         system,
         messages,
