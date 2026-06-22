@@ -568,10 +568,8 @@ function App() {
   });
   const [ctx, setCtx] = useState({
     dmPriorities: "",
-    objections: "",
     localData: "",
     evidence: "",
-    existingPlans: "",
     costBenefit: "",
     fhfRole: ""
   });
@@ -674,7 +672,7 @@ function App() {
     try {
       const text = await callProxy("brief", [{
         role: "user",
-        content: "Please draft my policy brief now."
+        content: "Please draft my advocacy brief now."
       }], 2500);
       setBriefMessages([{
         role: "assistant",
@@ -703,7 +701,7 @@ function App() {
     try {
       const apiMsgs = [{
         role: "user",
-        content: "Please draft my policy brief now."
+        content: "Please draft my advocacy brief now."
       }, ...updated];
       const text = await callProxy("brief", apiMsgs, 2500);
       const newMsgs = [...updated, {
@@ -729,7 +727,7 @@ function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "policy-brief.txt";
+    a.download = "advocacy-brief.txt";
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -743,10 +741,8 @@ function App() {
     });
     setCtx({
       dmPriorities: "",
-      objections: "",
       localData: "",
       evidence: "",
-      existingPlans: "",
       costBenefit: "",
       fhfRole: ""
     });
@@ -761,15 +757,7 @@ function App() {
     setRefineStarted(false);
     setBriefComplete(false);
   }
-  const stepIndex = {
-    "core-message": 0,
-    "refine": 1,
-    "context": 2,
-    "chat": 3
-  }[screen];
-  function Header({
-    subtitle
-  }) {
+  function Header() {
     return React.createElement("div", {
       style: {
         ...cardHdr,
@@ -852,7 +840,7 @@ function App() {
       color: CHARCOAL,
       margin: "0 0 0.75rem"
     }
-  }, "Think about the advocacy objective your group has been working on. Now imagine you have just a few minutes to speak with a key decision maker you identified in Unit 3. What would you say?"), React.createElement("p", {
+  }, "Think about the advocacy objective your group has been working on. Now imagine you have just a few minutes to speak with a key decision maker. What would you say?"), React.createElement("p", {
     style: {
       fontFamily: FONT,
       fontSize: 15,
