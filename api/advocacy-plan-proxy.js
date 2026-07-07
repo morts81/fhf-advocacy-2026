@@ -42,8 +42,9 @@ The final output should resemble a concise advocacy plan template, not a long re
 
 const PRINCIPLES = `IMPORTANT PRINCIPLES:
 - Draw only on what the participant has provided. Do not invent facts, figures, dates, stakeholders or examples.
+- Some slides are attached as images (for example stakeholder maps, ROI or data charts, tables, or diagrams pasted into slides as pictures). Read each attached image. If it contains substantive content - data, figures, a stakeholder map, a table, a chart or a diagram - use that content in the plan. If an image is purely decorative (a photo, a logo, a stock picture), ignore it. Judge each image on what it actually contains.
 - Where specific information is missing for a section, use a clear placeholder that names exactly what is needed, for example: [Add the specific budget cycle month here] or [Confirm the name of the relevant national eye health plan]. Avoid vague placeholders.
-- If a figure or statistic is provided, use it exactly as given. Do not round, generalise or substitute it.
+- If a figure or statistic is provided (including inside an image), use it exactly as given. Do not round, generalise or substitute it.
 - If a date or month is provided without a year, use it exactly as given. Do not add a year.
 - Preserve the participant's own wording where it is specific and useful, especially for the SMART objective and stakeholder positions.`;
 
@@ -51,7 +52,7 @@ function buildReviewPrompt(groupName, extractedContent) {
   return `You are helping a participant from The Fred Hollows Foundation (FHF) prepare to consolidate their advocacy course work into a single advocacy plan.
 
 ${groupName ? `The plan is for: ${groupName}\n` : ""}
-The participant has uploaded materials from their course (extracted from slide decks, Word documents and notes). Your job at this stage is NOT to write the plan. It is to review what they have provided and help them see what is strong and what may be missing, before the plan is generated.
+The participant has uploaded materials from their course (extracted from slide decks, Word documents and notes). Some slides may be attached as images (for example stakeholder maps, data or ROI charts, tables or diagrams pasted in as pictures). Read each attached image: if it contains substantive content, treat it as part of their materials; if it is purely decorative (a photo or logo), ignore it. Your job at this stage is NOT to write the plan. It is to review what they have provided and help them see what is strong and what may be missing, before the plan is generated.
 
 Here is all the content the participant has provided:
 
@@ -167,7 +168,7 @@ export default async function handler(req, res) {
   let system, msgs, tokens;
   if (mode === "review") {
     system = buildReviewPrompt(groupName || "", extractedContent);
-    msgs = [{ role: "user", content: "Please review my uploaded materials." }];
+    msgs = (Array.isArray(messages) && messages.length) ? messages : [{ role: "user", content: "Please review my uploaded materials." }];
     tokens = 700;
   } else if (mode === "plan") {
     if (!Array.isArray(messages) || messages.length === 0) {
