@@ -739,10 +739,10 @@ function planTextToHtml(plan) {
       if (cells.every(c => /^:?-+:?$/.test(c))) continue;
       closeList();
       if (!inTable) {
-        html += `<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse;width:100%;${ARIAL}">`;
+        html += `<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse;width:100%;${ARIAL}font-size:11pt;">`;
         inTable = true;
       }
-      const cellHtml = cells.map(c => `<td style="vertical-align:top;${ARIAL}">${inlineFmt(c)}</td>`).join("");
+      const cellHtml = cells.map(c => `<td style="vertical-align:top;${ARIAL}font-size:11pt;">${inlineFmt(c)}</td>`).join("");
       html += `<tr>${cellHtml}</tr>`;
       continue;
     } else {
@@ -781,7 +781,7 @@ function planTextToHtml(plan) {
 }
 function downloadPlanAsWord(plan) {
   const body = planTextToHtml(plan);
-  const doc = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Advocacy Plan</title><style>body,p,td,li,h1,h2,h3,table{font-family:Arial,sans-serif;}</style></head><body style="font-family:Arial,sans-serif;font-size:11pt;color:#282828;">${body}</body></html>`;
+  const doc = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Advocacy Plan</title><style>body,p,td,li,h1,h2,h3,table{font-family:Arial,sans-serif;}body,p,td,li,table{font-size:11pt;}</style></head><body style="font-family:Arial,sans-serif;font-size:11pt;color:#282828;">${body}</body></html>`;
   const blob = new Blob([doc], {
     type: "application/msword"
   });
@@ -1524,6 +1524,8 @@ function App() {
     msg: msg
   })), loading && planMessages.length === 0 && React.createElement(WaitingNote, {
     text: "Building your plan from everything you provided. This can take up to a minute — please don't close the page."
+  }), loading && planMessages.length > 0 && React.createElement(WaitingNote, {
+    text: "Updating your plan… this can take up to a minute. Please don't close the page."
   }), loading && React.createElement(TypingIndicator, null), apiError && React.createElement(ErrorBanner, {
     message: apiError,
     onDismiss: () => setApiError(null)
