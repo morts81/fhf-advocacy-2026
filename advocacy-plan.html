@@ -255,8 +255,11 @@ function Divider() {
     }
   });
 }
+function stripDashes(s) {
+  return (s || "").replace(/\s*—\s*/g, " - ").replace(/(\d)\s*–\s*(\d)/g, "$1 to $2").replace(/\s*–\s*/g, " - ");
+}
 function renderRich(text) {
-  const clean = (text || "").replace(/PLAN_COMPLETE\s*/g, "");
+  const clean = stripDashes((text || "").replace(/PLAN_COMPLETE\s*/g, ""));
   const lines = clean.split("\n");
   const out = [];
   let i = 0;
@@ -718,7 +721,7 @@ function inlineFmt(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 }
 function planTextToHtml(plan) {
-  const lines = plan.replace(/PLAN_COMPLETE\s*/g, "").split("\n");
+  const lines = stripDashes(plan.replace(/PLAN_COMPLETE\s*/g, "")).split("\n");
   let html = "";
   let inTable = false;
   let inList = false;
@@ -764,7 +767,18 @@ function planTextToHtml(plan) {
     const headingMatch = trimmed.match(/^\*\*(.+?)\*\*:?$/);
     if (headingMatch) {
       closeList();
-      html += `<h2 style="${ARIAL}color:#282828;">${inlineFmt(headingMatch[1])}</h2>`;
+      const label = headingMatch[1].replace(/:$/, "").trim();
+      const TOP_LEVEL = ["smart objective", "background, rationale and current challenges", "specific policy and practice changes targeted", "power analysis", "proposed advocacy activities", "upcoming policy windows and opportunities", "key milestones", "resources required", "monitoring, evaluation and learning", "risks and mitigation"];
+      const isTitle = /draft advocacy plan/i.test(label);
+      const norm = label.toLowerCase();
+      const isTop = TOP_LEVEL.some(t => norm.startsWith(t));
+      if (isTitle) {
+        html += `<h1 style="${ARIAL}color:#282828;">${inlineFmt(headingMatch[1])}</h1>`;
+      } else if (isTop) {
+        html += `<h2 style="${ARIAL}color:#282828;">${inlineFmt(headingMatch[1])}</h2>`;
+      } else {
+        html += `<h3 style="${ARIAL}color:#282828;">${inlineFmt(headingMatch[1])}</h3>`;
+      }
       continue;
     }
     if (trimmed.match(/^[-•]\s/)) {
