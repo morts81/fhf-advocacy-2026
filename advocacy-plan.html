@@ -555,10 +555,11 @@ function readAsText(file) {
   });
 }
 const MIN_IMAGE_BYTES = 15000;
-const MAX_IMAGES_PER_FILE = 15;
-const MAX_IMG_DIM = 1500;
-const JPEG_QUALITY = 0.72;
-const MAX_TOTAL_IMG_BASE64 = 3200000;
+const MAX_IMAGES_PER_FILE = 8;
+const MAX_TOTAL_IMAGES = 10;
+const MAX_IMG_DIM = 1100;
+const JPEG_QUALITY = 0.68;
+const MAX_TOTAL_IMG_BASE64 = 1500000;
 const SUPPORTED_IMG = {
   png: "image/png",
   jpg: "image/jpeg",
@@ -915,6 +916,7 @@ function App() {
     const out = [];
     let total = 0;
     for (const img of all) {
+      if (out.length >= MAX_TOTAL_IMAGES) break;
       if (total + img.size > MAX_TOTAL_IMG_BASE64) continue;
       total += img.size;
       out.push(img);
@@ -956,6 +958,9 @@ function App() {
       body: JSON.stringify(body)
     });
     if (!res.ok) {
+      if (res.status === 413) {
+        throw new Error("Your files include too much image content to send at once. Try removing image-heavy slides or uploading fewer files, then paste any key figures or the stakeholder map into the notes box instead.");
+      }
       let msg = `Request failed (${res.status}). Please try again.`;
       try {
         const j = await res.json();
