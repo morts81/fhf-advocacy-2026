@@ -779,7 +779,11 @@ function planTextToHtml(plan) {
   closeTable();
   return html;
 }
-function downloadPlanAsWord(plan) {
+function slugifyName(name) {
+  const s = (name || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
+  return s;
+}
+function downloadPlanAsWord(plan, groupName) {
   const body = planTextToHtml(plan);
   const doc = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Advocacy Plan</title><style>body,p,td,li,h1,h2,h3,table{font-family:Arial,sans-serif;}body,p,td,li,table{font-size:11pt;}</style></head><body style="font-family:Arial,sans-serif;font-size:11pt;color:#282828;">${body}</body></html>`;
   const blob = new Blob([doc], {
@@ -787,8 +791,9 @@ function downloadPlanAsWord(plan) {
   });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
+  const slug = slugifyName(groupName);
   a.href = url;
-  a.download = "advocacy-plan.doc";
+  a.download = slug ? `advocacy-plan-${slug}.doc` : "advocacy-plan.doc";
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -816,6 +821,7 @@ function App() {
   const [apiError, setApiError] = useState(null);
   const [showRefineBtn, setShowRefineBtn] = useState(false);
   const [refineStarted, setRefineStarted] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [planComplete, setPlanComplete] = useState(false);
   const planBottom = useRef(null);
   const fileInputRef = useRef(null);
@@ -1020,7 +1026,7 @@ function App() {
     }
     setLoading(false);
   }
-  async function sendPlan(override) {
+  async function sendPlan(override, isQuestionsOnly) {
     const userMsg = (override || planInput).trim();
     if (!userMsg || loading) return;
     setPlanInput("");
@@ -1031,6 +1037,7 @@ function App() {
     }];
     setPlanMessages(updated);
     setLoading(true);
+    setIsRegenerating(!isQuestionsOnly);
     setApiError(null);
     try {
       const apiMsgs = [{
@@ -1056,6 +1063,7 @@ function App() {
       setApiError(err.message);
     }
     setLoading(false);
+    setIsRegenerating(false);
   }
   function reset() {
     setScreen("upload");
@@ -1071,6 +1079,7 @@ function App() {
     setShowRefineBtn(false);
     setRefineStarted(false);
     setPlanComplete(false);
+    setIsRegenerating(false);
   }
   function Header() {
     return React.createElement("div", {
@@ -1524,7 +1533,7 @@ function App() {
     msg: msg
   })), loading && planMessages.length === 0 && React.createElement(WaitingNote, {
     text: "Building your plan from everything you provided. This can take up to a minute — please don't close the page."
-  }), loading && planMessages.length > 0 && React.createElement(WaitingNote, {
+  }), loading && planMessages.length > 0 && isRegenerating && React.createElement(WaitingNote, {
     text: "Updating your plan… this can take up to a minute. Please don't close the page."
   }), loading && React.createElement(TypingIndicator, null), apiError && React.createElement(ErrorBanner, {
     message: apiError,
@@ -1553,7 +1562,7 @@ function App() {
     style: btnSageDark,
     onClick: () => {
       setRefineStarted(true);
-      sendPlan("I have read the draft plan and I am ready to refine it.");
+      sendPlan("I have read the draft plan and I am ready to refine it.", true);
     }
   }, React.createElement("i", {
     className: "ti ti-edit"
@@ -1639,7 +1648,7 @@ function App() {
       ...btnSuccess,
       alignSelf: "flex-start"
     },
-    onClick: () => downloadPlanAsWord(extractPlanText(planMessages) || "")
+    onClick: () => downloadPlanAsWord(extractPlanText(planMessages) || "", groupName)
   }, React.createElement("i", {
     className: "ti ti-download"
   }), "Download as Word")), React.createElement("div", {
@@ -1665,7 +1674,7 @@ function App() {
     className: "ti ti-refresh"
   }), "Start a new plan"), React.createElement("button", {
     style: btnPrimary,
-    onClick: () => downloadPlanAsWord(extractPlanText(planMessages) || "")
+    onClick: () => downloadPlanAsWord(extractPlanText(planMessages) || "", groupName)
   }, React.createElement("i", {
     className: "ti ti-download"
   }), "Download as Word"))));
