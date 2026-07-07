@@ -17,6 +17,9 @@
     @keyframes blink { 0%,80%,100%{opacity:.25;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     .fade-in { animation: fadeIn 0.3s ease forwards; }
+    .plan-table { border-collapse: collapse; width: 100%; margin: 6px 0; font-size: 13.5px; }
+    .plan-table td { border: 1px solid rgba(40,40,40,0.2); padding: 6px 9px; vertical-align: top; text-align: left; }
+    .plan-table tr:first-child td { background: #EBF5F3; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -139,7 +142,7 @@ const btnSageDark = {
   alignItems: "center",
   gap: 6
 };
-const STEPS = ["Add your work", "Generate plan", "Refine & download"];
+const STEPS = ["Add your work", "Review", "Generate", "Download"];
 function StepBar({
   current
 }) {
@@ -199,7 +202,7 @@ function StepBar({
         height: 2,
         background: done ? SAGE_DARK : BORDER,
         margin: "0 10px",
-        minWidth: 16
+        minWidth: 12
       }
     }));
   }));
@@ -252,19 +255,49 @@ function Divider() {
     }
   });
 }
-function renderMessageContent(text, isUser = false) {
-  const lines = (text || "").split("\n");
-  return lines.map((line, i) => {
-    if (!line.trim()) return React.createElement("div", {
-      key: i,
-      style: {
-        height: 8
+function renderRich(text) {
+  const clean = (text || "").replace(/PLAN_COMPLETE\s*/g, "");
+  const lines = clean.split("\n");
+  const out = [];
+  let i = 0;
+  let key = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+      const rows = [];
+      while (i < lines.length && lines[i].trim().startsWith("|") && lines[i].trim().endsWith("|")) {
+        const cells = lines[i].trim().slice(1, -1).split("|").map(c => c.trim());
+        if (!cells.every(c => /^:?-+:?$/.test(c))) rows.push(cells);
+        i++;
       }
-    });
+      out.push(React.createElement("table", {
+        key: key++,
+        className: "plan-table"
+      }, React.createElement("tbody", null, rows.map((r, ri) => React.createElement("tr", {
+        key: ri
+      }, r.map((c, ci) => React.createElement("td", {
+        key: ci,
+        dangerouslySetInnerHTML: {
+          __html: c.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        }
+      })))))));
+      continue;
+    }
+    if (!trimmed) {
+      out.push(React.createElement("div", {
+        key: key++,
+        style: {
+          height: 8
+        }
+      }));
+      i++;
+      continue;
+    }
     const html = line.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-    if (!isUser && line.match(/^[-•]\s/)) {
-      return React.createElement("div", {
-        key: i,
+    if (line.match(/^[-•]\s/)) {
+      out.push(React.createElement("div", {
+        key: key++,
         style: {
           display: "flex",
           gap: 8,
@@ -280,18 +313,21 @@ function renderMessageContent(text, isUser = false) {
         dangerouslySetInnerHTML: {
           __html: html.replace(/^[-•]\s/, "")
         }
+      })));
+    } else {
+      out.push(React.createElement("div", {
+        key: key++,
+        style: {
+          lineHeight: 1.7
+        },
+        dangerouslySetInnerHTML: {
+          __html: html
+        }
       }));
     }
-    return React.createElement("div", {
-      key: i,
-      style: {
-        lineHeight: 1.7
-      },
-      dangerouslySetInnerHTML: {
-        __html: html
-      }
-    });
-  });
+    i++;
+  }
+  return out;
 }
 function TypingIndicator() {
   return React.createElement("div", {
@@ -338,6 +374,30 @@ function TypingIndicator() {
       animationDelay: `${d * 0.22}s`
     }
   }))));
+}
+function WaitingNote({
+  text
+}) {
+  return React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "0.75rem 1rem",
+      background: ORANGE_PALE,
+      borderRadius: 8,
+      border: `1px solid ${ORANGE}`,
+      fontFamily: FONT,
+      fontSize: 13.5,
+      color: ORANGE_DARK
+    }
+  }, React.createElement("i", {
+    className: "ti ti-clock",
+    style: {
+      fontSize: 16,
+      flexShrink: 0
+    }
+  }), React.createElement("span", null, text));
 }
 function ErrorBanner({
   message,
@@ -408,7 +468,7 @@ function ChatBubble({
     }
   })), React.createElement("div", {
     style: {
-      maxWidth: isUser ? "72%" : "88%",
+      maxWidth: isUser ? "72%" : "92%",
       padding: "0.85rem 1.1rem",
       borderRadius: isUser ? "12px 12px 3px 12px" : "3px 12px 12px 12px",
       background: isUser ? ORANGE : WHITE,
@@ -416,9 +476,10 @@ function ChatBubble({
       fontFamily: FONT,
       fontSize: 15,
       lineHeight: 1.7,
-      color: isUser ? WHITE : CHARCOAL
+      color: isUser ? WHITE : CHARCOAL,
+      width: isUser ? "auto" : "100%"
     }
-  }, renderMessageContent(msg.content.replace(/PLAN_COMPLETE\s*/g, ""), isUser)));
+  }, isUser ? msg.content : renderRich(msg.content)));
 }
 function ChatInput({
   value,
@@ -496,11 +557,7 @@ function readAsText(file) {
 async function extractPptx(file) {
   const buf = await readAsArrayBuffer(file);
   const zip = await JSZip.loadAsync(buf);
-  const slideNames = Object.keys(zip.files).filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n)).sort((a, b) => {
-    const na = parseInt(a.match(/slide(\d+)\.xml/)[1], 10);
-    const nb = parseInt(b.match(/slide(\d+)\.xml/)[1], 10);
-    return na - nb;
-  });
+  const slideNames = Object.keys(zip.files).filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n)).sort((a, b) => parseInt(a.match(/slide(\d+)\.xml/)[1], 10) - parseInt(b.match(/slide(\d+)\.xml/)[1], 10));
   const parts = [];
   for (let s = 0; s < slideNames.length; s++) {
     const xml = await zip.files[slideNames[s]].async("string");
@@ -530,11 +587,15 @@ function isSupported(name) {
   const n = name.toLowerCase();
   return n.endsWith(".pptx") || n.endsWith(".docx") || n.endsWith(".txt") || n.endsWith(".md") || n.endsWith(".csv");
 }
+function inlineFmt(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
 function planTextToHtml(plan) {
   const lines = plan.replace(/PLAN_COMPLETE\s*/g, "").split("\n");
   let html = "";
   let inTable = false;
   let inList = false;
+  const ARIAL = "font-family:Arial,sans-serif;";
   function closeList() {
     if (inList) {
       html += "</ul>";
@@ -548,17 +609,21 @@ function planTextToHtml(plan) {
     }
   }
   for (let raw of lines) {
-    const line = raw.trimEnd();
-    const trimmed = line.trim();
+    const trimmed = raw.trim();
+    if (/^-{3,}$/.test(trimmed) || /^_{3,}$/.test(trimmed) || /^\*{3,}$/.test(trimmed)) {
+      closeList();
+      closeTable();
+      continue;
+    }
     if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
       const cells = trimmed.slice(1, -1).split("|").map(c => c.trim());
       if (cells.every(c => /^:?-+:?$/.test(c))) continue;
       closeList();
       if (!inTable) {
-        html += '<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse;width:100%;">';
+        html += `<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse;width:100%;${ARIAL}">`;
         inTable = true;
       }
-      const cellHtml = cells.map(c => `<td style="vertical-align:top;">${inlineFmt(c)}</td>`).join("");
+      const cellHtml = cells.map(c => `<td style="vertical-align:top;${ARIAL}">${inlineFmt(c)}</td>`).join("");
       html += `<tr>${cellHtml}</tr>`;
       continue;
     } else {
@@ -572,35 +637,32 @@ function planTextToHtml(plan) {
     const headingMatch = trimmed.match(/^\*\*(.+?)\*\*:?$/);
     if (headingMatch) {
       closeList();
-      html += `<h2 style="font-family:Arial,sans-serif;color:#282828;">${inlineFmt(headingMatch[1])}</h2>`;
+      html += `<h2 style="${ARIAL}color:#282828;">${inlineFmt(headingMatch[1])}</h2>`;
       continue;
     }
     if (trimmed.match(/^[-•]\s/)) {
       if (!inList) {
-        html += "<ul>";
+        html += `<ul style="${ARIAL}">`;
         inList = true;
       }
-      html += `<li>${inlineFmt(trimmed.replace(/^[-•]\s/, ""))}</li>`;
+      html += `<li style="${ARIAL}">${inlineFmt(trimmed.replace(/^[-•]\s/, ""))}</li>`;
       continue;
     }
     if (trimmed.match(/^\d+\.\s/)) {
       closeList();
-      html += `<p>${inlineFmt(trimmed)}</p>`;
+      html += `<p style="${ARIAL}">${inlineFmt(trimmed)}</p>`;
       continue;
     }
     closeList();
-    html += `<p style="font-family:Arial,sans-serif;">${inlineFmt(trimmed)}</p>`;
+    html += `<p style="${ARIAL}">${inlineFmt(trimmed)}</p>`;
   }
   closeList();
   closeTable();
   return html;
 }
-function inlineFmt(s) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-}
 function downloadPlanAsWord(plan) {
   const body = planTextToHtml(plan);
-  const doc = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Advocacy Plan</title></head><body style="font-family:Arial,sans-serif;font-size:11pt;color:#282828;">${body}</body></html>`;
+  const doc = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Advocacy Plan</title><style>body,p,td,li,h1,h2,h3,table{font-family:Arial,sans-serif;}</style></head><body style="font-family:Arial,sans-serif;font-size:11pt;color:#282828;">${body}</body></html>`;
   const blob = new Blob([doc], {
     type: "application/msword"
   });
@@ -626,6 +688,9 @@ function App() {
   const [files, setFiles] = useState([]);
   const [pasteText, setPasteText] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [clarification, setClarification] = useState("");
   const [planMessages, setPlanMessages] = useState([]);
   const [planInput, setPlanInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -665,19 +730,15 @@ function App() {
       }]);
       try {
         const text = await extractFile(file);
-        if (!text) {
-          setFiles(prev => prev.map(f => f.id === id ? {
-            ...f,
-            status: "error",
-            error: "No text found in file"
-          } : f));
-        } else {
-          setFiles(prev => prev.map(f => f.id === id ? {
-            ...f,
-            status: "ready",
-            text
-          } : f));
-        }
+        if (!text) setFiles(prev => prev.map(f => f.id === id ? {
+          ...f,
+          status: "error",
+          error: "No text found"
+        } : f));else setFiles(prev => prev.map(f => f.id === id ? {
+          ...f,
+          status: "ready",
+          text
+        } : f));
       } catch (err) {
         setFiles(prev => prev.map(f => f.id === id ? {
           ...f,
@@ -700,41 +761,62 @@ function App() {
   const stillExtracting = files.some(f => f.status === "extracting");
   function buildExtractedContent() {
     const parts = [];
-    for (const f of readyFiles) {
-      parts.push(`=== FILE: ${f.name} ===\n${f.text}`);
-    }
-    if (pasteText.trim()) {
-      parts.push(`=== PASTED NOTES ===\n${pasteText.trim()}`);
-    }
+    for (const f of readyFiles) parts.push(`=== FILE: ${f.name} ===\n${f.text}`);
+    if (pasteText.trim()) parts.push(`=== PASTED NOTES ===\n${pasteText.trim()}`);
     return parts.join("\n\n");
   }
-  async function callProxy(messages, maxTokens = 4000) {
+  async function callProxy(body) {
     const res = await fetch("/api/advocacy-plan-proxy", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        groupName,
-        extractedContent: buildExtractedContent(),
-        messages,
-        maxTokens
-      })
+      body: JSON.stringify(body)
     });
-    if (!res.ok) throw new Error(`Request failed (${res.status}). Please try again.`);
+    if (!res.ok) {
+      let msg = `Request failed (${res.status}). Please try again.`;
+      try {
+        const j = await res.json();
+        if (j.error) msg = j.error;
+      } catch (e) {}
+      throw new Error(msg);
+    }
     const data = await res.json();
     if (!data.text) throw new Error("No response received. Please try again.");
     return data.text;
+  }
+  async function goToReview() {
+    setScreen("review");
+    setReviewLoading(true);
+    setApiError(null);
+    try {
+      const text = await callProxy({
+        mode: "review",
+        groupName,
+        extractedContent: buildExtractedContent()
+      });
+      setReviewText(text);
+    } catch (err) {
+      setApiError(err.message);
+    }
+    setReviewLoading(false);
   }
   async function generatePlan() {
     setScreen("chat");
     setLoading(true);
     setApiError(null);
     try {
-      const text = await callProxy([{
-        role: "user",
-        content: "Please consolidate my course work into a draft advocacy plan now."
-      }]);
+      const text = await callProxy({
+        mode: "plan",
+        groupName,
+        extractedContent: buildExtractedContent(),
+        clarification,
+        messages: [{
+          role: "user",
+          content: "Please consolidate my course work into a draft advocacy plan now."
+        }],
+        maxTokens: 4000
+      });
       setPlanMessages([{
         role: "assistant",
         content: text
@@ -764,7 +846,14 @@ function App() {
         role: "user",
         content: "Please consolidate my course work into a draft advocacy plan now."
       }, ...updated];
-      const text = await callProxy(apiMsgs);
+      const text = await callProxy({
+        mode: "plan",
+        groupName,
+        extractedContent: buildExtractedContent(),
+        clarification,
+        messages: apiMsgs,
+        maxTokens: 4000
+      });
       setPlanMessages([...updated, {
         role: "assistant",
         content: text
@@ -782,6 +871,8 @@ function App() {
     setFiles([]);
     setPasteText("");
     setGroupName("");
+    setReviewText("");
+    setClarification("");
     setPlanMessages([]);
     setPlanInput("");
     setLoading(false);
@@ -874,7 +965,7 @@ function App() {
     }
   }, "Add the files you created during the course — your slides, policy brief, and any notes. The more you include, the more complete your plan will be.")), React.createElement("div", {
     style: cardBody
-  }, React.createElement(SectionLabel, null, "Step 1 of 3"), React.createElement("h2", {
+  }, React.createElement(SectionLabel, null, "Step 1 of 4"), React.createElement("h2", {
     style: {
       fontFamily: FONT,
       fontSize: 22,
@@ -895,10 +986,10 @@ function App() {
       display: "block",
       marginBottom: 5
     }
-  }, "Country, course or group name"), React.createElement("input", {
+  }, "Course, country and/or group name"), React.createElement("input", {
     value: groupName,
     onChange: e => setGroupName(e.target.value),
-    placeholder: "e.g. Nepal Country Team — Advocacy Course 2026",
+    placeholder: "Advocacy Course - Indonesia - Group 2",
     style: {
       width: "100%",
       fontFamily: FONT,
@@ -927,7 +1018,7 @@ function App() {
       margin: "0 0 10px",
       lineHeight: 1.55
     }
-  }, "PowerPoint (.pptx), Word (.docx) or text (.txt) files. You can add several at once. We'll read the text from each — nothing is stored."), React.createElement("div", {
+  }, "PowerPoint (.pptx), Word (.docx) or text (.txt) files. You can add several at once. We'll read the text from each - nothing is stored."), React.createElement("div", {
     onDragOver: e => {
       e.preventDefault();
       setDragOver(true);
@@ -1070,17 +1161,24 @@ function App() {
       outline: "none",
       resize: "vertical"
     }
-  }), React.createElement("div", {
+  }), apiError && React.createElement("div", {
+    style: {
+      marginTop: "1rem"
+    }
+  }, React.createElement(ErrorBanner, {
+    message: apiError,
+    onDismiss: () => setApiError(null)
+  })), React.createElement("div", {
     style: {
       marginTop: "1.5rem"
     }
   }, React.createElement("button", {
     style: hasContent && !stillExtracting ? btnPrimary : btnDisabled,
     disabled: !hasContent || stillExtracting,
-    onClick: generatePlan
+    onClick: goToReview
   }, React.createElement("i", {
-    className: "ti ti-sparkles"
-  }), stillExtracting ? "Reading files…" : "Generate my advocacy plan"), !hasContent && React.createElement("p", {
+    className: "ti ti-arrow-right"
+  }), stillExtracting ? "Reading files…" : "Review my content"), !hasContent && React.createElement("p", {
     style: {
       fontFamily: FONT,
       fontSize: 12.5,
@@ -1088,6 +1186,124 @@ function App() {
       margin: "8px 0 0"
     }
   }, "Add at least one file or paste some notes to continue.")))));
+  if (screen === "review") return React.createElement("div", {
+    style: pageWrap
+  }, React.createElement("div", {
+    style: cardWrap
+  }, React.createElement(Header, null), React.createElement(StepBar, {
+    current: 1
+  }), React.createElement("div", {
+    style: cardBody
+  }, React.createElement(SectionLabel, null, "Step 2 of 4"), React.createElement("h2", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 22,
+      fontWeight: 700,
+      color: CHARCOAL,
+      margin: "0 0 0.75rem"
+    }
+  }, "Review Your Content"), React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 15,
+      lineHeight: 1.7,
+      color: CHARCOAL,
+      margin: "0 0 1.25rem"
+    }
+  }, "Here's a quick review of what you've provided, and anything that might be worth adding before your plan is generated."), reviewLoading && React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 12
+    }
+  }, React.createElement(WaitingNote, {
+    text: "Reviewing your materials… this usually takes 10–20 seconds."
+  }), React.createElement(TypingIndicator, null)), apiError && !reviewLoading && React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 12
+    }
+  }, React.createElement(ErrorBanner, {
+    message: apiError
+  }), React.createElement("div", null, React.createElement("button", {
+    style: btnSageDark,
+    onClick: goToReview
+  }, React.createElement("i", {
+    className: "ti ti-refresh"
+  }), "Try again"))), reviewText && !reviewLoading && React.createElement("div", {
+    style: {
+      background: WHITE,
+      border: `1px solid ${BORDER}`,
+      borderRadius: 10,
+      padding: "1.25rem 1.5rem",
+      fontFamily: FONT,
+      fontSize: 15,
+      color: CHARCOAL
+    }
+  }, renderRich(reviewText)), reviewText && !reviewLoading && React.createElement("div", {
+    style: {
+      marginTop: "1.5rem"
+    }
+  }, React.createElement("label", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 14,
+      fontWeight: 600,
+      color: CHARCOAL,
+      display: "block",
+      marginBottom: 5
+    }
+  }, "Add any missing detail or clarification ", React.createElement("span", {
+    style: {
+      fontWeight: 400,
+      fontStyle: "italic",
+      color: CHARCOAL_60,
+      fontSize: 12
+    }
+  }, "Optional")), React.createElement("p", {
+    style: {
+      fontFamily: FONT,
+      fontSize: 13,
+      color: CHARCOAL_60,
+      margin: "0 0 8px",
+      lineHeight: 1.55
+    }
+  }, "Fill any gaps noted above, or add anything else that would help. You can also go straight to generating your plan."), React.createElement("textarea", {
+    value: clarification,
+    onChange: e => setClarification(e.target.value),
+    rows: 5,
+    placeholder: "e.g. Our success indicators are… / The budget cycle we're targeting is… / Add the missing stakeholder here…",
+    style: {
+      width: "100%",
+      fontFamily: FONT,
+      fontSize: 14,
+      lineHeight: 1.6,
+      border: `1px solid ${BORDER_MED}`,
+      borderRadius: 8,
+      padding: "0.65rem 0.9rem",
+      color: CHARCOAL,
+      background: WHITE,
+      outline: "none",
+      resize: "vertical"
+    }
+  }), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 12,
+      marginTop: "1.25rem"
+    }
+  }, React.createElement("button", {
+    style: btnSage,
+    onClick: () => setScreen("upload")
+  }, React.createElement("i", {
+    className: "ti ti-arrow-left"
+  }), "Back"), React.createElement("button", {
+    style: btnPrimary,
+    onClick: generatePlan
+  }, React.createElement("i", {
+    className: "ti ti-sparkles"
+  }), "Generate my advocacy plan"))))));
   return React.createElement("div", {
     style: pageWrap
   }, React.createElement("div", {
@@ -1098,7 +1314,7 @@ function App() {
       minHeight: "88vh"
     }
   }, React.createElement(Header, null), React.createElement(StepBar, {
-    current: planComplete ? 2 : 1
+    current: planComplete ? 3 : 2
   }), React.createElement("div", {
     style: {
       flex: 1,
@@ -1112,7 +1328,9 @@ function App() {
   }, planMessages.map((msg, i) => React.createElement(ChatBubble, {
     key: i,
     msg: msg
-  })), loading && React.createElement(TypingIndicator, null), apiError && React.createElement(ErrorBanner, {
+  })), loading && planMessages.length === 0 && React.createElement(WaitingNote, {
+    text: "Building your plan from everything you provided. This can take up to a minute — please don't close the page."
+  }), loading && React.createElement(TypingIndicator, null), apiError && React.createElement(ErrorBanner, {
     message: apiError,
     onDismiss: () => setApiError(null)
   }), showRefineBtn && !refineStarted && !loading && !planComplete && React.createElement("div", {
