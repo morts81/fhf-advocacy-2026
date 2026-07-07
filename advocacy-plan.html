@@ -556,6 +556,9 @@ function readAsText(file) {
 }
 const MIN_IMAGE_BYTES = 15000;
 const MAX_IMAGES_PER_FILE = 15;
+const MAX_IMG_DIM = 1500;
+const JPEG_QUALITY = 0.72;
+const MAX_TOTAL_IMG_BASE64 = 3200000;
 const SUPPORTED_IMG = {
   png: "image/png",
   jpg: "image/jpeg",
@@ -572,6 +575,53 @@ function arrayBufferToBase64(buf) {
   }
   return btoa(binary);
 }
+function compressImage(arrayBuffer, mediaType) {
+  return new Promise(resolve => {
+    try {
+      const blob = new Blob([arrayBuffer], {
+        type: mediaType
+      });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        let {
+          width,
+          height
+        } = img;
+        if (width === 0 || height === 0) {
+          URL.revokeObjectURL(url);
+          resolve(null);
+          return;
+        }
+        const scale = Math.min(1, MAX_IMG_DIM / Math.max(width, height));
+        const w = Math.round(width * scale);
+        const h = Math.round(height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        try {
+          const dataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+          const base64 = dataUrl.split(",")[1] || "";
+          resolve(base64 || null);
+        } catch (e) {
+          resolve(null);
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+      img.src = url;
+    } catch (e) {
+      resolve(null);
+    }
+  });
+}
 async function extractPptx(file) {
   const buf = await readAsArrayBuffer(file);
   const zip = await JSZip.loadAsync(buf);
@@ -579,6 +629,7 @@ async function extractPptx(file) {
   const parts = [];
   const images = [];
   let hadUnreadable = false;
+  let skippedForSize = false;
   const seen = new Set();
   for (let s = 0; s < slideNames.length; s++) {
     const slideNum = s + 1;
@@ -608,17 +659,21 @@ async function extractPptx(file) {
       }
       const imgBuf = await entry.async("arraybuffer");
       if (imgBuf.byteLength < MIN_IMAGE_BYTES) continue;
+      const base64 = await compressImage(imgBuf, mediaType);
+      if (!base64) continue;
       images.push({
         slide: slideNum,
-        mediaType,
-        data: arrayBufferToBase64(imgBuf)
+        mediaType: "image/jpeg",
+        data: base64,
+        size: base64.length
       });
     }
   }
   return {
     text: parts.join("\n"),
     images,
-    hadUnreadable
+    hadUnreadable,
+    skippedForSize
   };
 }
 async function extractDocx(file) {
@@ -845,16 +900,28 @@ function App() {
     return parts.join("\n\n");
   }
   function collectImages() {
-    const out = [];
+    const all = [];
     for (const f of readyFiles) {
       for (const img of f.images || []) {
-        out.push({
+        all.push({
           label: `${f.name} — Slide ${img.slide}`,
           mediaType: img.mediaType,
-          data: img.data
+          data: img.data,
+          size: img.size || (img.data ? img.data.length : 0)
         });
       }
     }
+    all.sort((a, b) => b.size - a.size);
+    const out = [];
+    let total = 0;
+    for (const img of all) {
+      if (total + img.size > MAX_TOTAL_IMG_BASE64) continue;
+      total += img.size;
+      out.push(img);
+    }
+    out.sort((a, b) => a.label.localeCompare(b.label, undefined, {
+      numeric: true
+    }));
     return out;
   }
   function buildUserContent(introText) {
