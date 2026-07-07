@@ -3,6 +3,7 @@
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/lobby-meeting", "destination": "/lobby-meeting.html" },
     { "source": "/brief-builder", "destination": "/brief-builder.html" },
+    { "source": "/advocacy-plan", "destination": "/advocacy-plan.html" },
     { "source": "/", "destination": "/index.html" }
   ],
   "headers": [
