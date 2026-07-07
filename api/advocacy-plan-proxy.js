@@ -23,7 +23,7 @@ List the main advocacy activities needed to influence the target decision-makers
 List relevant opportunities that could help advance the objective, where provided: planning or budgeting cycles; policy reviews; ministry consultations; sector meetings; project reviews; World Sight Day or other campaign moments; conferences or summits; publication of evidence; coalition or platform meetings. If no specific dates are provided, describe likely opportunity types and mark them "To confirm".
 
 **Key milestones**
-Summarise expected milestones over time. Use the participant's timeline where available. If dates are incomplete, use phases such as: Months 1-3; Months 4-6; Months 7-12; 2026-2027; 2027-2028. Milestones should describe progress points, not just activities.
+Summarise expected milestones over time. Use the participant's timeline where available. If dates are incomplete, use phases such as: Months 1-3; Months 4-6; Months 7-12; 2026-2027; 2027-2028. Milestones should describe progress points, not just activities. Keep the timeframe style consistent within this section: if the participant's timeline uses calendar years, use calendar years throughout and do not mix in relative phases like "6 to 12 months"; if it uses relative phases, use those throughout. Do not label the same table with both a relative phase and a calendar year.
 
 **Resources required / products to be developed to support advocacy**
 List the resources, inputs and advocacy products needed, where relevant: FHF staff time and responsibilities; partner or coalition coordination; research and evidence generation; policy briefs; technical briefs; business cases; presentations; workshops or meetings; IEC or communications materials; travel or event costs; monitoring, learning and documentation; funding for pilots or demonstrations. Do not invent precise costs. Use "To be estimated" if needed.
@@ -46,7 +46,8 @@ const PRINCIPLES = `IMPORTANT PRINCIPLES:
 - Where specific information is missing for a section, use a clear placeholder that names exactly what is needed, for example: [Add the specific budget cycle month here] or [Confirm the name of the relevant national eye health plan]. Avoid vague placeholders.
 - If a figure or statistic is provided (including inside an image), use it exactly as given. Do not round, generalise or substitute it.
 - If a date or month is provided without a year, use it exactly as given. Do not add a year.
-- Preserve the participant's own wording where it is specific and useful, especially for the SMART objective and stakeholder positions.`;
+- Preserve the participant's own wording where it is specific and useful, especially for the SMART objective and stakeholder positions.
+- Do not use em dashes (—) or en dashes (–) anywhere in the output. Use a normal hyphen with spaces, a comma, or a colon instead. For number ranges use "to" (for example "6 to 12 months", "2026 to 2027").`;
 
 function buildReviewPrompt(groupName, extractedContent) {
   return `You are helping a participant from The Fred Hollows Foundation (FHF) prepare to consolidate their advocacy course work into a single advocacy plan.
@@ -68,7 +69,7 @@ A complete advocacy plan draws on these course outputs:
 - The policy brief (Unit 7)
 - Success indicators, evaluation questions and data collection methods (Unit 8)
 
-Write a short, friendly review with this structure. Use **bold** for the two headings only. Keep it concise and practical - this is a quick check, not a report.
+Write a short, friendly review with this structure. Use **bold** for the two headings only. Keep it concise and practical - this is a quick check, not a report. Do not use em dashes or en dashes anywhere; use a normal hyphen, comma or colon instead.
 
 **What I can see in your materials**
 2-4 sentences summarising what you have found: the objective, the issue, the main stakeholders, and which course areas appear to be covered.
