@@ -670,6 +670,14 @@ async function extractPptx(file) {
       });
     }
   }
+  const diagramNames = Object.keys(zip.files).filter(n => /^ppt\/diagrams\/data\d+\.xml$/.test(n)).sort((a, b) => parseInt(a.match(/data(\d+)\.xml/)[1], 10) - parseInt(b.match(/data(\d+)\.xml/)[1], 10));
+  for (const dName of diagramNames) {
+    const dxml = await zip.files[dName].async("string");
+    const dMatches = dxml.match(/<a:t>([\s\S]*?)<\/a:t>/g) || [];
+    const dTexts = dMatches.map(m => m.replace(/<a:t>([\s\S]*?)<\/a:t>/, "$1").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'")).map(t => t.trim()).filter(Boolean);
+    const dText = dTexts.join(" ").trim();
+    if (dText) parts.push(`[Diagram / SmartArt] ${dText}`);
+  }
   return {
     text: parts.join("\n"),
     images,
